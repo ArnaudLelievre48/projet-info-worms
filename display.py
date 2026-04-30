@@ -18,4 +18,3 @@ def show_grid(grid):
     plt.clf()
     plt.imshow(grid_show, cmap=cmap, vmin=0, vmax=2, origin='lower')
     plt.colorbar(ticks=[0, 1, 2])
-    plt.show()

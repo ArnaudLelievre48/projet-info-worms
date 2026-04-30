@@ -30,8 +30,9 @@ plt.pause(0.1)
 
 
 while not np.array_equal(GRID, physics.step(GRID)):
-    for j in range(20):
+    for j in range(10):
         GRID = physics.step(GRID)
+        print(j)
     GRID = physics.apply_object_cuts(GRID)
     display.show_grid(GRID)
-    plt.pause(0.01)
+    plt.pause(0.001)
