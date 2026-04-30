@@ -21,7 +21,8 @@ GRID = shapes.rectangle(0, 0, Nx, int(Ny/5), 255, GRID) # sol
 GRID = shapes.rectangle(int(Nx/3), int(Ny/2), 20, 20, 1, GRID, material=2)
 GRID = shapes.rectangle(int(Nx/2.8), int(Ny/3), 15, 10, 2, GRID, material=1)
 
-GRID = shapes.triangle(int(Nx/1.5), int(Ny/1.5), 20, 10, 3, GRID, material=1)
+GRID = shapes.triangle(int(Nx/1.2), int(Ny/1.7), 20, 10, 3, GRID, material=1)
+GRID = shapes.h_circle(int(Nx/1.5), int(Ny/1.5), 10, 3, GRID, material=1)
 
 plt.ion()
 display.show_grid(GRID)
