@@ -18,4 +18,8 @@ def triangle(x0,y0,dx,dy, object_id, grid, material=1):
                     grid[y+y0, x+x0] = (material,object_id)
     return(grid)
 
-#kjdbkj
+def h_circle (x0,y0,r, object_id, grid, material=1):
+    for x in range(int(2*r)):
+        for y in range(int(r*sin(Arcos(x/r))):
+            grid[y+y0,x+x0]=(material,object_id)
+	return grid
