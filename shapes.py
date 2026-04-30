@@ -5,3 +5,15 @@ def rectangle(x0,y0,dx,dy, object_id, grid, material=1):
         for y in range(dy):
             grid[y+y0, x+x0] = (material,object_id)
     return(grid)
+
+
+def triangle(x0,y0,dx,dy, object_id, grid, material=1):
+    for x in range(dx):
+        for y in range(dy):
+            if x <= dx/2:
+                if y<=(dy/(dx/2))*x:
+                    grid[y+y0, x+x0] = (material,object_id)
+            else:
+                if y>=(dy/(dx/2))*x:
+                    grid[y+y0, x+x0] = (material,object_id)
+    return(grid)
