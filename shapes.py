@@ -17,3 +17,5 @@ def triangle(x0,y0,dx,dy, object_id, grid, material=1):
                 if y>=(dy/(dx/2))*x:
                     grid[y+y0, x+x0] = (material,object_id)
     return(grid)
+
+#kjdbkj
