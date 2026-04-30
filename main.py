@@ -13,7 +13,7 @@ Nx, Ny = 200, 100
 ## 1 - SOLID
 ## 2 - SABLE
 
-GRID = np.array([[(0,0) for x in range(Nx)] for y in range(Ny)])
+GRID = np.array([[(0,0,x+y*Ny) for x in range(Nx)] for y in range(Ny)])
 
 
 GRID = shapes.rectangle(0, 0, Nx, int(Ny/5), 255, GRID) # sol

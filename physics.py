@@ -19,16 +19,16 @@ def step(grid):
     for y in range(1, h):
         for x in range(w):
 
-            material, obj_id = grid[y, x]
+            material, obj_id, pixel_id = grid[y, x]
 
             if material == SAND:
 
                 # --- try DOWN ---
-                below_material, _ = grid[y - 1, x]
+                below_material, _, _ = grid[y - 1, x]
 
                 if below_material == AIR:
-                    new[y, x] = (AIR, -1)
-                    new[y - 1, x] = (SAND, obj_id)
+                    new[y, x] = (AIR, -1, pixel_id)
+                    new[y - 1, x] = (SAND, obj_id, pixel_id)
                     continue
 
                 # --- try DIAGONALS ---
@@ -40,11 +40,11 @@ def step(grid):
                 for dx in directions:
                     nx = x + dx
                     if 0 <= nx < w:
-                        diag_material, _ = grid[y - 1, nx]
+                        diag_material, _, _ = grid[y - 1, nx]
 
                         if diag_material == AIR:
-                            new[y, x] = (AIR, -1)
-                            new[y - 1, nx] = (SAND, obj_id)
+                            new[y, x] = (AIR, -1, pixel_id)
+                            new[y - 1, nx] = (SAND, obj_id, pixel_id)
                             moved = True
                             break
 
