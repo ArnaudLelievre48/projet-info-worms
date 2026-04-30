@@ -6,7 +6,7 @@ import physics
 import matplotlib.pyplot as plt
 
 # taille de la grille
-Nx, Ny = 400, 300
+Nx, Ny = 200, 100
 
 # types :
 ## 0 - AIR
@@ -17,12 +17,12 @@ GRID = np.array([[(0,0) for x in range(Nx)] for y in range(Ny)])
 
 
 GRID = shapes.rectangle(0, 0, Nx, int(Ny/5), 255, GRID) # sol
-GRID = shapes.rectangle(100, int(Ny/2), 50, 50, 1, GRID, material=2)
-GRID = shapes.rectangle(120, int(Ny/3), 30, 20, 2, GRID, material=1)
+GRID = shapes.rectangle(int(Nx/3), int(Ny/2), 20, 20, 1, GRID, material=2)
+GRID = shapes.rectangle(int(Nx/2.8), int(Ny/3), 15, 10, 2, GRID, material=1)
 
-GRID = shapes.rectangle(300, int(Ny/5), 50, 50, 3, GRID, material=1)
-GRID = shapes.rectangle(300, int(Ny/5)+50, 50, 50, 3, GRID, material=2)
-GRID = shapes.rectangle(280, int(Ny/5)+100, 50, 50, 3, GRID, material=1)
+GRID = shapes.rectangle(int(Nx/1.2), int(Ny/5), 20, 20, 3, GRID, material=1)
+GRID = shapes.rectangle(int(Nx/1.2), int(Ny/5)+20, 20, 20, 3, GRID, material=2)
+GRID = shapes.rectangle(int(Nx/1.3), int(Ny/5)+30, 20, 20, 3, GRID, material=1)
 
 plt.ion()
 display.show_grid(GRID)
