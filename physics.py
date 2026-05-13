@@ -11,11 +11,63 @@ SAND = 2
 
 
 
-def step(grid):
+#def step(grid):
+#    h, w = grid.shape[:2]
+#    new = grid.copy()
+#
+#    # bottom → top
+#    for y in range(1, h):
+#        for x in range(w):
+#
+#            material, obj_id, texture = grid[y, x]
+#
+#            if material == SAND:
+#
+#                # --- try DOWN ---
+#                below_material, _, _ = grid[y - 1, x]
+#
+#                if below_material == AIR:
+#                    new[y, x] = (AIR, -1, texture)
+#                    new[y - 1, x] = (SAND, obj_id, texture)
+#                    continue
+#
+#                # --- try DIAGONALS ---
+#                directions = [-1, 1]
+#                random.shuffle(directions)
+#
+#                moved = False
+#
+#                for dx in directions:
+#                    nx = x + dx
+#                    if 0 <= nx < w:
+#                        diag_material, _, _ = grid[y - 1, nx]
+#
+#                        if diag_material == AIR:
+#                            new[y, x] = (AIR, -1, texture)
+#                            new[y - 1, nx] = (SAND, obj_id, texture)
+#                            moved = True
+#                            break
+#
+#                # if not moved → stays in place
+#
+#    return new
+
+def step(grid, wormz1, wormz2):
+    moved = False  # ← AJOUT
+
+    for worm in wormz1:
+        if worm.is_supposed_to_fall(grid):
+            moved = True
+
+    for worm in wormz2:
+        if worm.is_supposed_to_fall(grid):
+            moved = True
+
+
     h, w = grid.shape[:2]
     new = grid.copy()
 
-    # bottom → top
+
     for y in range(1, h):
         for x in range(w):
 
@@ -23,19 +75,16 @@ def step(grid):
 
             if material == SAND:
 
-                # --- try DOWN ---
                 below_material, _, _ = grid[y - 1, x]
 
                 if below_material == AIR:
                     new[y, x] = (AIR, -1, texture)
                     new[y - 1, x] = (SAND, obj_id, texture)
+                    moved = True  # ← AJOUT
                     continue
 
-                # --- try DIAGONALS ---
                 directions = [-1, 1]
                 random.shuffle(directions)
-
-                moved = False
 
                 for dx in directions:
                     nx = x + dx
@@ -45,12 +94,12 @@ def step(grid):
                         if diag_material == AIR:
                             new[y, x] = (AIR, -1, texture)
                             new[y - 1, nx] = (SAND, obj_id, texture)
-                            moved = True
+                            moved = True  # ← AJOUT
                             break
 
-                # if not moved → stays in place
+    return new, moved  # ← SEUL changement de retour
 
-    return new
+
 
 
 def apply_object_cuts(grid):
