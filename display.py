@@ -6,6 +6,7 @@ from matplotlib.colors import ListedColormap
 import pygame
 import os
 
+
 cmap = ListedColormap(["gray", "red", "orange"])
 
 
@@ -99,3 +100,29 @@ def display_weapon(screen, traj_x, traj_y, cell_size=16):
         (traj_x * cell_size, (Ny - traj_y - 1) * cell_size)
     )
 
+def draw_shop(screen, player, shop_buttons, font):
+
+    pygame.draw.rect(screen, (100, 80, 80), shop_buttons["weapon"]["rect"])
+    pygame.draw.rect(screen, (100, 80, 80), shop_buttons["worm"]["rect"])
+
+    txt1 = font.render(
+        f"Weapon : {shop_buttons['weapon']['price']}",
+        True,
+        (255,255,255)
+    )
+
+    txt2 = font.render(
+        f"Worm : {shop_buttons['worm']['price']}",
+        True,
+        (255,255,255)
+    )
+
+    money_txt = font.render(
+        f"Money : {player.money}",
+        True,
+        (255,255,0)
+    )
+
+    screen.blit(txt1, (40, 20))
+    screen.blit(txt2, (260, 20))
+    screen.blit(money_txt, (450, 20))

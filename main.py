@@ -11,6 +11,18 @@ import assets
 #backend = "MATPLOTLIB"
 backend = "PYGAME"
 
+shop_buttons = {
+    "weapon": {
+        "rect": pygame.Rect(10, 10, 200, 40),
+        "price": 100
+    },
+
+    "worm": {
+        "rect": pygame.Rect(220, 10, 200, 40),
+        "price": 200
+    }
+}
+
 # taille de la grille
 Nx, Ny = 200, 100
 cell_size = 16
@@ -60,6 +72,7 @@ player2 = assets.Player()
 if backend == "PYGAME":
     # init pygame and its screen
     pygame.init()
+    font = pygame.font.SysFont(None, 30)
     info = pygame.display.Info()
     screen_width  = info.current_w
     screen_height = info.current_h
@@ -109,6 +122,7 @@ if backend == "PYGAME":
                         if event.type == pygame.QUIT:
                             pygame.quit()
                             exit()
+
                     if (0 < int(trajectory[0][i]) < Nx) and (0 < int(trajectory[1][i]) < Ny):
                         if GRID[int(trajectory[1][i])][int(trajectory[0][i])][0] in [1,2]:
                             exploded = True
@@ -130,6 +144,7 @@ if backend == "PYGAME":
                             dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
                             pygame.display.flip()
                             clock.tick(2000)
+
                     screen.fill((0, 0, 0))
                     dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
                     dp.display_weapon(screen, trajectory[0][i], trajectory[1][i])
@@ -161,6 +176,7 @@ if backend == "PYGAME":
             clock.tick(60)
 
         #dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
+        dp.draw_shop(screen, player1, shop_buttons, font)
         pygame.display.flip()
         clock.tick(60)
 
