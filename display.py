@@ -67,7 +67,6 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=16):
 
     for worm in wormz2:
         tex = 3
-        path = f"textures/worm1.png"
         path = f"textures/worm2.png"
         if not os.path.exists(path):
             continue
@@ -76,3 +75,27 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=16):
         img = pygame.transform.scale(img, (cell_size, cell_size))
         cache[tex] = img
         screen.blit(cache[tex], (worm.x_pos * cell_size, (Ny-worm.y_pos-1) * cell_size))
+
+
+weapon_cache = {}
+
+def display_weapon(screen, traj_x, traj_y, cell_size=16):
+
+    global weapon_cache
+
+    Nx = 200
+    Ny = 100
+
+    tex = "weapon1"
+
+    if tex not in weapon_cache:
+        path = "textures/weapon1.png"
+        img = pygame.image.load(path).convert_alpha()
+        img = pygame.transform.scale(img, (cell_size, cell_size))
+        weapon_cache[tex] = img
+
+    screen.blit(
+        weapon_cache[tex],
+        (traj_x * cell_size, (Ny - traj_y - 1) * cell_size)
+    )
+

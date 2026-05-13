@@ -38,6 +38,8 @@ GRID = shapes.h_circle(int(Nx / 1.5), int(Ny / 1.5), 10, 3, GRID, material=1, te
 
 
 player1 = assets.Player()
+weapon1 = player1.Weapons()
+player1.weapons.append(weapon1)
 player2 = assets.Player()
 
 
@@ -52,21 +54,19 @@ player2 = assets.Player()
 #            plt.pause(0.001)
 
 if backend == "PYGAME":
+    # init pygame and its screen
     pygame.init()
-
     info = pygame.display.Info()
-
     screen_width  = info.current_w
     screen_height = info.current_h
-
     screen = pygame.display.set_mode((screen_width, screen_height))
     clock = pygame.time.Clock()
-
 
 
     running = True
     clock.tick(1000)
 
+    # main game loop
     while running:
 
         # gestion des inputs
@@ -77,14 +77,49 @@ if backend == "PYGAME":
             running = False
 
         # ajout de worm
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if (event.type == pygame.MOUSEBUTTONDOWN) and (event.button == 1):
             mouse_x, mouse_y = pygame.mouse.get_pos()
             grid_x = int(mouse_x // cell_size)
             grid_y = int(Ny - 1 - (mouse_y // cell_size))
-            new_worm = player1.worm(grid_x, grid_y)
+            new_worm = player1.Worm(grid_x, grid_y)
             player1.wormz.append(new_worm)
             screen.fill((0, 0, 0))
             dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
+
+        if (event.type == pygame.MOUSEBUTTONDOWN) and (event.button == 3):
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            grid_x = int(mouse_x // cell_size)
+            grid_y = int(Ny - 1 - (mouse_y // cell_size))
+            if player1.weapons != []:
+                weapon = player1.weapons.pop()
+            trajectory = weapon.launch_trajectory(grid_x, grid_y, 0, 50)
+            print(trajectory[1])
+            i = 0
+            exploded = False
+            while (i < len(trajectory[0])) and (not exploded):
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        exit()
+                if (0 < int(trajectory[0][i]) < Nx) and (0 < int(trajectory[1][i]) < Ny):
+                    if GRID[int(trajectory[1][i])][int(trajectory[0][i])][0] in [1,2]:
+                        exploded = True
+                        print("EXPLOSION")
+                        GRID = shapes.transform(GRID, int(trajectory[0][i]), int(trajectory[1][i]), weapon.radius_break, 2)
+                        GRID = shapes.transform(GRID, int(trajectory[0][i]), int(trajectory[1][i]), weapon.radius_explosion, 0)
+                        dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
+                        pygame.display.flip()
+                        clock.tick(800)
+                screen.fill((0, 0, 0))
+                dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
+                dp.display_weapon(screen, trajectory[0][i], trajectory[1][i])
+                pygame.display.flip()
+                clock.tick(60)
+                i+=1
+
+            screen.fill((0, 0, 0))
+            dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
+
 
 
 
@@ -94,12 +129,6 @@ if backend == "PYGAME":
             event = pygame.event.poll()
             if event.type == pygame.QUIT:
                 running = False
-
-            for worm in player1.wormz:
-                worm.gravity(GRID)
-
-            for worm in player2.wormz:
-                worm.gravity(GRID)
 
             GRID, moved = physics.step(GRID, player1.wormz, player2.wormz)
             GRID = physics.apply_object_cuts(GRID)

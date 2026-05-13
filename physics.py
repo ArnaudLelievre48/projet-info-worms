@@ -58,10 +58,12 @@ def step(grid, wormz1, wormz2):
     for worm in wormz1:
         if worm.is_supposed_to_fall(grid):
             moved = True
+            worm.gravity(grid)
 
     for worm in wormz2:
         if worm.is_supposed_to_fall(grid):
             moved = True
+            worm.gravity(grid)
 
 
     h, w = grid.shape[:2]
