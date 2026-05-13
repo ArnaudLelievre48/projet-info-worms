@@ -14,12 +14,20 @@ class Player(metaclass=ABCMeta):
         self.weapons = weapons
         self.money = money
 
+    def kill_worm(self, worm_id):
+        for i in range(len(self.wormz)):
+            if self.wormz[i].worm_id == worm_id:
+                self.wormz.pop(i)
+                return
+
+
     class Worm:
-        def __init__(self, x_pos, y_pos, health=3, range=100, weight=5):
+        def __init__(self, x_pos, y_pos, health=3, range=100, weight=5, worm_id=None):
             self.health = health # nombre de degats avant de mourrir
             self.range = range # distance de missiles à viser
             self.weight = weight # nombre de block min en dessous pour pas casser
             self.x_pos, self.y_pos = x_pos, y_pos
+            self.worm_id = worm_id
 
         def take_damage(self, damage):
             self.health -= damage
@@ -40,7 +48,7 @@ class Player(metaclass=ABCMeta):
 
 
     class Weapons:
-        def __init__(self, radius_range=100, radius_explosion=10, radius_break=15, damage=1):
+        def __init__(self, radius_range=100, radius_explosion=5, radius_break=8, damage=3):
             self.radius_range = radius_range
             self.radius_explosion = radius_explosion
             self.radius_break = radius_break
