@@ -64,6 +64,7 @@ def step(grid, player1, player2):
             worm.y_pos += 3
             if worm.health <= 0:
                 player1.kill_worm(worm.worm_id)
+                player2.money += 150
 
 
     for worm in player2.wormz:
@@ -75,6 +76,8 @@ def step(grid, player1, player2):
             worm.y_pos += 3
             if worm.health <= 0:
                 player2.kill_worm(worm.worm_id)
+                player1.money += 150
+
 
 
 

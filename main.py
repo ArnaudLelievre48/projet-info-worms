@@ -59,7 +59,7 @@ player1 = assets.Player()
 player2 = assets.Player()
 
 worm1 = player1.Worm(25, Ny-59-1, worm_id=0)
-worm2 = player2.Worm(156, Ny-41-1, worm_id=0)
+worm2 = player2.Worm(163, Ny-41-1, worm_id=0)
 
 
 player1.wormz.append(worm1)
@@ -95,12 +95,15 @@ if backend == "PYGAME":
     screen_width = info.current_w
     screen_height = info.current_h
     screen = pygame.display.set_mode((screen_width, screen_height))
+    OVERRIDE = True
+    if OVERRIDE:
+        screen = pygame.display.set_mode((1920, 1080))
     clock = pygame.time.Clock()
 
     running = True
     clock.tick(2000)
 
-    screen.fill((0, 0, 0))
+    screen.fill((0, 255, 255))
     dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
     dp.draw_shop(screen, player1, player2, font)
 
@@ -124,6 +127,7 @@ if backend == "PYGAME":
             screen_height = info.current_h
             screen = pygame.display.set_mode((screen_width, screen_height))
             pygame.display.flip()
+            screen.fill((0, 255, 255))
             refresh_UI = True
 
 
@@ -151,7 +155,7 @@ if backend == "PYGAME":
         if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_TAB):
             if players[player_id].wormz != []:
                 id_worm_launch = (id_worm_launch + 1) % len(players[player_id].wormz)
-                screen.fill((0, 0, 0))
+                screen.fill((0, 255, 255))
                 pygame.draw.circle(
                     screen,
                     (255, 0, 0),
@@ -165,10 +169,11 @@ if backend == "PYGAME":
 
         # finir un tour (changer de joueur)
         if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_RETURN):
+            id_worm_launch = 0
             player_id = (player_id+1)%2
             nb_actions = 0
             print("PLAYER ID : ", player_id)
-            screen.fill((0, 0, 0))
+            screen.fill((0, 255, 255))
             refresh_UI = True
 
         # acheter missile
@@ -178,7 +183,7 @@ if backend == "PYGAME":
             weapon = players[player_id].Weapons()
             players[player_id].weapons.append(weapon)
             players[player_id].money -= 100
-            screen.fill((0, 0, 0))
+            screen.fill((0, 255, 255))
             refresh_UI = True
 
         # lancer un missile
@@ -214,7 +219,8 @@ if backend == "PYGAME":
                             2,
                         ] or (i == len(trajectory[0]) - 1):
                             exploded = True
-                            for player in players:
+                            for k in range(len(players)):
+                                player = players[k]
                                 for worm in player.wormz:
                                     if (
                                         (worm.x_pos - int(trajectory[0][i])) ** 2
@@ -223,6 +229,7 @@ if backend == "PYGAME":
                                         worm.take_damage(weapon.damage)
                                         if worm.health <= 0:
                                             player.kill_worm(worm.worm_id)
+                                            players[(k+1)%2].money += 150
                                     elif (
                                         (worm.x_pos - int(trajectory[0][i])) ** 2
                                         + (worm.y_pos - int(trajectory[1][i])) ** 2
@@ -230,6 +237,7 @@ if backend == "PYGAME":
                                         worm.take_damage(weapon.damage / 2)
                                         if worm.health <= 0:
                                             player.kill_worm(worm.worm_id)
+                                            players[(k+1)%2].money += 150
                                     print("health : ", worm.health)
                             GRID = shapes.transform(
                                 GRID,
@@ -251,7 +259,7 @@ if backend == "PYGAME":
                             pygame.display.flip()
                             clock.tick(2000)
 
-                    screen.fill((0, 0, 0))
+                    screen.fill((0, 255, 255))
                     dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
                     dp.display_weapon(screen, trajectory[0][i], trajectory[1][i])
                     pygame.display.flip()
@@ -260,7 +268,7 @@ if backend == "PYGAME":
             else:
                 print("CAN'T SHOOT WEAPON")
 
-            screen.fill((0, 0, 0))
+            screen.fill((0, 255, 255))
             refresh_UI = True
 
         # step
@@ -276,7 +284,7 @@ if backend == "PYGAME":
             GRID, moved = physics.step(GRID, player1, player2)
             GRID = physics.apply_object_cuts(GRID)
 
-            screen.fill((0, 0, 0))
+            screen.fill((0, 255, 255))
             dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
             pygame.display.flip()
             clock.tick(60)

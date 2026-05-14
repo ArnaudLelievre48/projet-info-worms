@@ -18,6 +18,11 @@ class Player(metaclass=ABCMeta):
         for i in range(len(self.wormz)):
             if self.wormz[i].worm_id == worm_id:
                 self.wormz.pop(i)
+                if len(self.wormz) == 0:
+                    print("--------------------")
+                    print("  GAME FINISHED !   ")
+                    print("--------------------")
+                    quit()
                 return
 
 
@@ -55,9 +60,13 @@ class Player(metaclass=ABCMeta):
             self.damage = damage
 
         def launch_trajectory(self, x_target, y_target, x_pos, y_pos):
+
             # eq trajectory : y = -g/2 (x-x_target)*(x-x_pos) + ((y_target-y_pos)/(x_target - x_pos))*(x-x_pos) + y_pos
             X = np.linspace(x_pos, x_target, 50) # 20 points
-            Y = -0.01 * (X-x_target)*(X - x_pos) + ((y_target - y_pos)/(x_target - x_pos))*(X - x_pos) + y_pos
+            if x_target == x_pos:
+                Y = np.linspace(y_pos, y_target, 50)
+            else:
+                Y = -0.01 * (X-x_target)*(X - x_pos) + ((y_target - y_pos)/(x_target - x_pos))*(X - x_pos) + y_pos
             return(X, Y)
 
 
