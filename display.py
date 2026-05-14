@@ -27,6 +27,8 @@ def draw_cell(screen: pygame.Surface, x, y):
 
 
 def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=16):
+    print("REFRESH SHOW GRID")
+
     Ny = len(grid)
     Nx = len(grid[0])
 
@@ -100,16 +102,13 @@ def display_weapon(screen, traj_x, traj_y, cell_size=16):
         (traj_x * cell_size, (Ny - traj_y - 1) * cell_size)
     )
 
-def draw_shop(screen, player, font, inv=False):
+def draw_shop(screen, player1, player2, font):
+    print("REFRESH SHOW SHOP")
+
     width = screen.get_width()
 
-    if not inv:
-        pygame.draw.rect(screen, (100, 80, 80), pygame.Rect(width - 650, 10, 200, 40))
-        pygame.draw.rect(screen, (100, 80, 80), pygame.Rect(width - 450, 10, 200, 40))
-    else:
-        pass
-        #pygame.draw.rect(screen, (80, 100, 100), pygame.Rect(50, 10, 200, 40))
-        #pygame.draw.rect(screen, (80, 100, 100), pygame.Rect(250, 10, 200, 40))
+    pygame.draw.rect(screen, (100, 80, 80), pygame.Rect(width - 650, 10, 200, 40))
+    pygame.draw.rect(screen, (100, 80, 80), pygame.Rect(width - 450, 10, 200, 40))
 
 
     txt1 = font.render(
@@ -124,18 +123,23 @@ def draw_shop(screen, player, font, inv=False):
         (255,255,255)
     )
 
-    money_txt = font.render(
-        f"Money : {player.money}",
+    money1_txt = font.render(
+        f"Money : {player1.money}",
         True,
         (255,255,0)
     )
 
-    if not inv:
-        screen.blit(txt1, (100, 20))
-        screen.blit(txt2, (300, 20))
-        screen.blit(money_txt, (500, 20))
-    else:
-        screen.blit(txt1, (width -600, 20))
-        screen.blit(txt2, (width - 400, 20))
-        screen.blit(money_txt, (width - 200, 20))
+    money2_txt = font.render(
+        f"Money : {player2.money}",
+        True,
+        (255,255,0)
+    )
+
+
+    screen.blit(txt1, (100, 20))
+    screen.blit(txt2, (300, 20))
+    screen.blit(money1_txt, (500, 20))
+    screen.blit(txt1, (width -600, 20))
+    screen.blit(txt2, (width - 400, 20))
+    screen.blit(money2_txt, (width - 200, 20))
 

@@ -87,18 +87,23 @@ if backend == "PYGAME":
 
     screen.fill((0, 0, 0))
     dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
+    dp.draw_shop(screen, player1, player2, font)
+
+    refresh_UI = True
+
+    pygame.display.flip()
 
     # main game loop
     while running:
+
+        # si la fenetre change de taille
         info = pygame.display.Info()
         if (screen_width != info.current_w) or (screen_height != info.current_h):
             screen_width = info.current_w
             screen_height = info.current_h
             screen = pygame.display.set_mode((screen_width, screen_height))
-            dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
-            dp.draw_shop(screen, player1, font)
-            dp.draw_shop(screen, player2, font, inv=True)
             pygame.display.flip()
+            refresh_UI = True
 
         # gestion des inputs
         event = pygame.event.poll()
@@ -117,11 +122,11 @@ if backend == "PYGAME":
                 if GRID[grid_y][grid_x][0] == 0:
                     new_worm = players[player_id].Worm(grid_x, grid_y, worm_id=len(players[player_id].wormz))
                     players[player_id].wormz.append(new_worm)
-                    screen.fill((0, 0, 0))
-                    dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
+                    refresh_UI = True
                 else:
                     print("CANNOT PUT WORM HERE")
 
+        # change de worm selectionne pour le missile
         if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_TAB):
             if players[player_id].wormz != []:
                 id_worm_launch = (id_worm_launch + 1) % len(players[player_id].wormz)
@@ -135,12 +140,16 @@ if backend == "PYGAME":
                     ),
                     cell_size,
                 )
-                dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
+                refresh_UI = True
 
+        # finir un tour (changer de joueur)
         if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_RETURN):
             player_id = (player_id+1)%2
             print("PLAYER ID : ", player_id)
+            screen.fill((0, 0, 0))
+            refresh_UI = True
 
+        # lancer un missile
         if (event.type == pygame.MOUSEBUTTONDOWN) and (event.button == 3):
             mouse_x, mouse_y = pygame.mouse.get_pos()
             grid_x = int(mouse_x // cell_size)
@@ -216,15 +225,18 @@ if backend == "PYGAME":
                     pygame.display.flip()
                     clock.tick(60)
                     i += 1
-
             else:
                 print("NO MORE WEAPONS")
+
             screen.fill((0, 0, 0))
-            dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
+            refresh_UI = True
 
         # step
         GRID, moved = physics.step(GRID, player1, player2)
+        if moved:
+            refresh_UI = True
         while moved:
+
             event = pygame.event.poll()
             if event.type == pygame.QUIT:
                 running = False
@@ -237,11 +249,14 @@ if backend == "PYGAME":
             pygame.display.flip()
             clock.tick(60)
 
-        dp.draw_shop(screen, player1, font)
-        dp.draw_shop(screen, player2, font, inv=True)
+
+        if refresh_UI:
+            dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
+            dp.draw_shop(screen, player1, player2, font)
+            refresh_UI = False
+            pygame.display.flip()
         #dp.draw_UI(screen, player1, font)
         # dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
-        pygame.display.flip()
-        clock.tick(120)
+        clock.tick(60)
 
     pygame.quit()
