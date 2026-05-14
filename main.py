@@ -26,9 +26,13 @@ GRID = np.array([[(0, 0, 0) for x in range(Nx)] for y in range(Ny)])
 
 
 ground = mpimg.imread("map/ground.png")
+bridge1 = mpimg.imread("map/bridge1.png")
+bridge2 = mpimg.imread("map/bridge2.png")
+bridge3 = mpimg.imread("map/bridge3.png")
+bridge4 = mpimg.imread("map/bridge4.png")
 dirt_pixel = ground[99,0]
 grass_pixel = ground[86,0]
-print(dirt_pixel)
+bridge_pixel = bridge1[35,33]
 
 for y in range(Ny):
     for x in range(Nx):
@@ -37,6 +41,14 @@ for y in range(Ny):
                 GRID[Ny-y-1][x] = (1, -1, 3)
             if (ground[y,x] == grass_pixel).all():
                 GRID[Ny-y-1][x] = (1, -1, 4)
+        if bridge1[y,x][3] != 0.:
+            GRID[Ny-y-1][x] = (1, 1, 5)
+        if bridge2[y,x][3] != 0.:
+            GRID[Ny-y-1][x] = (1, 2, 5)
+        if bridge3[y,x][3] != 0.:
+            GRID[Ny-y-1][x] = (1, 3, 5)
+        if bridge4[y,x][3] != 0.:
+            GRID[Ny-y-1][x] = (1, 4, 5)
 
 
 # dp.show_grid(GRID)
@@ -45,6 +57,13 @@ for y in range(Ny):
 
 player1 = assets.Player()
 player2 = assets.Player()
+
+worm1 = player1.Worm(25, Ny-59-1, worm_id=0)
+worm2 = player2.Worm(156, Ny-41-1, worm_id=0)
+
+
+player1.wormz.append(worm1)
+player2.wormz.append(worm2)
 
 for i in range(3):
     weapon1 = player1.Weapons()
