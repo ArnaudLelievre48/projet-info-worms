@@ -3,7 +3,7 @@ import numpy as np
 
 class Player(metaclass=ABCMeta):
 
-    def __init__(self, wormz=None, weapons=[], money=1000):
+    def __init__(self, wormz=None, weapons=None, money=1000):
         if wormz is None:
             wormz = []
 
