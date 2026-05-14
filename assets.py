@@ -56,7 +56,7 @@ class Player(metaclass=ABCMeta):
 
         def launch_trajectory(self, x_target, y_target, x_pos, y_pos):
             # eq trajectory : y = -g/2 (x-x_target)*(x-x_pos) + ((y_target-y_pos)/(x_target - x_pos))*(x-x_pos) + y_pos
-            X = np.linspace(x_pos, x_target, 100) # 20 points
+            X = np.linspace(x_pos, x_target, 50) # 20 points
             Y = -0.01 * (X-x_target)*(X - x_pos) + ((y_target - y_pos)/(x_target - x_pos))*(X - x_pos) + y_pos
             return(X, Y)
 

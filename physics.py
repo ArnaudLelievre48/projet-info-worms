@@ -52,18 +52,31 @@ SAND = 2
 #
 #    return new
 
-def step(grid, wormz1, wormz2):
+def step(grid, player1, player2):
     moved = False  # ← AJOUT
 
-    for worm in wormz1:
+    for worm in player1.wormz:
         if worm.is_supposed_to_fall(grid):
             moved = True
             worm.gravity(grid)
+        elif grid[worm.y_pos][worm.x_pos][0] != 0:
+            worm.take_damage(0.75)
+            worm.y_pos += 3
+            if worm.health <= 0:
+                player1.kill_worm(worm.worm_id)
 
-    for worm in wormz2:
+
+    for worm in player2.wormz:
         if worm.is_supposed_to_fall(grid):
             moved = True
             worm.gravity(grid)
+        elif grid[worm.y_pos][worm.x_pos][0] != 0:
+            worm.take_damage(0.75)
+            worm.y_pos += 3
+            if worm.health <= 0:
+                player2.kill_worm(worm.worm_id)
+
+
 
 
     h, w = grid.shape[:2]

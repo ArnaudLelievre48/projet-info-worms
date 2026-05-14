@@ -100,19 +100,26 @@ def display_weapon(screen, traj_x, traj_y, cell_size=16):
         (traj_x * cell_size, (Ny - traj_y - 1) * cell_size)
     )
 
-def draw_shop(screen, player, shop_buttons, font):
+def draw_shop(screen, player, font, inv=False):
+    width = screen.get_width()
 
-    pygame.draw.rect(screen, (100, 80, 80), shop_buttons["weapon"]["rect"])
-    pygame.draw.rect(screen, (100, 80, 80), shop_buttons["worm"]["rect"])
+    if not inv:
+        pygame.draw.rect(screen, (100, 80, 80), pygame.Rect(width - 650, 10, 200, 40))
+        pygame.draw.rect(screen, (100, 80, 80), pygame.Rect(width - 450, 10, 200, 40))
+    else:
+        pass
+        #pygame.draw.rect(screen, (80, 100, 100), pygame.Rect(50, 10, 200, 40))
+        #pygame.draw.rect(screen, (80, 100, 100), pygame.Rect(250, 10, 200, 40))
+
 
     txt1 = font.render(
-        f"Weapon : {shop_buttons['weapon']['price']}",
+        f"Weapon : {100}",
         True,
         (255,255,255)
     )
 
     txt2 = font.render(
-        f"Worm : {shop_buttons['worm']['price']}",
+        f"Worm : {200}",
         True,
         (255,255,255)
     )
@@ -123,6 +130,12 @@ def draw_shop(screen, player, shop_buttons, font):
         (255,255,0)
     )
 
-    screen.blit(txt1, (40, 20))
-    screen.blit(txt2, (260, 20))
-    screen.blit(money_txt, (450, 20))
+    if not inv:
+        screen.blit(txt1, (100, 20))
+        screen.blit(txt2, (300, 20))
+        screen.blit(money_txt, (500, 20))
+    else:
+        screen.blit(txt1, (width -600, 20))
+        screen.blit(txt2, (width - 400, 20))
+        screen.blit(money_txt, (width - 200, 20))
+
