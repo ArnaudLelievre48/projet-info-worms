@@ -33,12 +33,12 @@ class Player(metaclass=ABCMeta):
             self.health -= damage
 
         def is_supposed_to_fall(self, GRID):
-            return ( (GRID[self.y_pos-1][self.x_pos][0] == 0) or (( (0 < self.x_pos)  and (self.x_pos < 200) ) and ( (GRID[self.y_pos-1][self.x_pos+1][0] == 0) or (GRID[self.y_pos-1][self.x_pos-1][0] == 0) )) )
+            return ( (GRID[self.y_pos-1][self.x_pos][0] == 0) or (( (0 < self.x_pos)  and (self.x_pos < 129) ) and ( (GRID[self.y_pos-1][self.x_pos+1][0] == 0) or (GRID[self.y_pos-1][self.x_pos-1][0] == 0) )) )
 
         def gravity(self, GRID):
             if GRID[self.y_pos-1][self.x_pos][0] == 0: # si AIR en dessous
                 self.y_pos -= 1
-            elif ( (0 < self.x_pos)  and (self.x_pos < 200) ):
+            elif ( (0 < self.x_pos)  and (self.x_pos < 192) ):
                 if GRID[self.y_pos-1][self.x_pos+1][0] == 0: # si AIR en diagonale gauche
                     self.y_pos -= 1
                     self.x_pos += 1

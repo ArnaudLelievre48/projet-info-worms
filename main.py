@@ -2,6 +2,7 @@
 # import matplotlib.pyplot as plt
 import numpy as np
 import pygame
+import matplotlib.image as mpimg
 
 import assets
 import display as dp
@@ -13,8 +14,8 @@ backend = "PYGAME"
 
 
 # taille de la grille
-Nx, Ny = 200, 100
-cell_size = 16
+Nx, Ny = 192, 108
+cell_size = 10
 
 # types :
 ## 0 - AIR
@@ -24,25 +25,19 @@ cell_size = 16
 GRID = np.array([[(0, 0, 0) for x in range(Nx)] for y in range(Ny)])
 
 
-GRID = shapes.rectangle(
-    0, 0, Nx, int(Ny / 5), GRID, object_id=-1, material=1, texture=1
-)  # sol
+ground = mpimg.imread("map/ground.png")
+dirt_pixel = ground[99,0]
+grass_pixel = ground[86,0]
+print(dirt_pixel)
 
-GRID = shapes.rectangle(
-    int(Nx / 2.8), int(Ny / 5), 15, 10, GRID, object_id=1, material=1, texture=1
-)
+for y in range(Ny):
+    for x in range(Nx):
+        if ground[y,x][3] != 0.:
+            if (ground[y,x] == dirt_pixel).all():
+                GRID[Ny-y-1][x] = (1, -1, 3)
+            if (ground[y,x] == grass_pixel).all():
+                GRID[Ny-y-1][x] = (1, -1, 4)
 
-GRID = shapes.triangle(
-    int(Nx / 1.2), int(Ny / 1.7), 20, 10, GRID, object_id=2, material=1, texture=1
-)
-
-GRID = shapes.h_circle(
-    int(Nx / 1.5), int(Ny / 1.5), 10, GRID, object_id=2, material=1, texture=1
-)
-
-GRID = shapes.rectangle(
-    int(Nx / 1.5) - 5, 0, 10, int(Ny / 1.5), GRID, object_id=2, material=1, texture=1
-)
 
 # dp.show_grid(GRID)
 # plt.pause(0.1)
@@ -95,32 +90,38 @@ if backend == "PYGAME":
     pygame.display.flip()
 
     # main game loop
+
+    nb_actions = 0
+
     while running:
+
+        # gestion des inputs
+        event = pygame.event.poll()
 
         # si la fenetre change de taille
         info = pygame.display.Info()
-        if (screen_width != info.current_w) or (screen_height != info.current_h):
+        if (screen_width != info.current_w) or (screen_height != info.current_h) or ( (event.type == pygame.KEYDOWN) and (event.key == pygame.K_r) ):
             screen_width = info.current_w
             screen_height = info.current_h
             screen = pygame.display.set_mode((screen_width, screen_height))
             pygame.display.flip()
             refresh_UI = True
 
-        # gestion des inputs
-        event = pygame.event.poll()
 
         # quitter le jeu
         if event.type == pygame.QUIT:
             running = False
 
         # ajout de worm
-        if (event.type == pygame.MOUSEBUTTONDOWN) and (event.button == 1):
+        if (event.type == pygame.MOUSEBUTTONDOWN) and (event.button == 1) and (nb_actions < 3):
             if players[player_id].money >= 200:
                 players[player_id].money -= 200
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 grid_x = int(mouse_x // cell_size)
                 grid_y = int(Ny - 1 - (mouse_y // cell_size))
                 if GRID[grid_y][grid_x][0] == 0:
+                    nb_actions += 1
+                    print("NB_ACTIONS : ", nb_actions, " / 3")
                     new_worm = players[player_id].Worm(grid_x, grid_y, worm_id=len(players[player_id].wormz))
                     players[player_id].wormz.append(new_worm)
                     refresh_UI = True
@@ -146,11 +147,15 @@ if backend == "PYGAME":
         # finir un tour (changer de joueur)
         if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_RETURN):
             player_id = (player_id+1)%2
+            nb_actions = 0
             print("PLAYER ID : ", player_id)
             screen.fill((0, 0, 0))
             refresh_UI = True
 
-        if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_b):
+        # acheter missile
+        if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_b) and (nb_actions < 3):
+            nb_actions += 1
+            print("NB_ACTIONS : ", nb_actions, " / 3")
             weapon = players[player_id].Weapons()
             players[player_id].weapons.append(weapon)
             players[player_id].money -= 100
@@ -158,7 +163,9 @@ if backend == "PYGAME":
             refresh_UI = True
 
         # lancer un missile
-        if (event.type == pygame.MOUSEBUTTONDOWN) and (event.button == 3):
+        if (event.type == pygame.MOUSEBUTTONDOWN) and (event.button == 3) and (nb_actions < 3):
+            nb_actions += 1
+            print("NB_ACTIONS : ", nb_actions, " / 3")
             mouse_x, mouse_y = pygame.mouse.get_pos()
             grid_x = int(mouse_x // cell_size)
             grid_y = int(Ny - 1 - (mouse_y // cell_size))
@@ -166,7 +173,6 @@ if backend == "PYGAME":
                 x_0_launch = players[player_id].wormz[id_worm_launch].x_pos
                 y_0_launch = players[player_id].wormz[id_worm_launch].y_pos
                 weapon = players[player_id].weapons.pop()
-                print(players[player_id].weapons)
                 trajectory = weapon.launch_trajectory(
                     grid_x, grid_y, x_0_launch, y_0_launch
                 )
@@ -174,6 +180,8 @@ if backend == "PYGAME":
                 i = 0
                 exploded = False
                 while (i < len(trajectory[0])) and (not exploded):
+
+                    event = pygame.event.poll()
                     for event in pygame.event.get():
                         if event.type == pygame.QUIT:
                             pygame.quit()
@@ -187,7 +195,6 @@ if backend == "PYGAME":
                             2,
                         ] or (i == len(trajectory[0]) - 1):
                             exploded = True
-                            print("EXPLOSION")
                             for player in players:
                                 for worm in player.wormz:
                                     if (
@@ -197,7 +204,6 @@ if backend == "PYGAME":
                                         worm.take_damage(weapon.damage)
                                         if worm.health <= 0:
                                             player.kill_worm(worm.worm_id)
-                                            print(player.wormz)
                                     elif (
                                         (worm.x_pos - int(trajectory[0][i])) ** 2
                                         + (worm.y_pos - int(trajectory[1][i])) ** 2
@@ -205,7 +211,6 @@ if backend == "PYGAME":
                                         worm.take_damage(weapon.damage / 2)
                                         if worm.health <= 0:
                                             player.kill_worm(worm.worm_id)
-                                            print(player.wormz)
                                     print("health : ", worm.health)
                             GRID = shapes.transform(
                                 GRID,
@@ -234,7 +239,7 @@ if backend == "PYGAME":
                     clock.tick(60)
                     i += 1
             else:
-                print("NO MORE WEAPONS")
+                print("CAN'T SHOOT WEAPON")
 
             screen.fill((0, 0, 0))
             refresh_UI = True
@@ -263,8 +268,8 @@ if backend == "PYGAME":
             dp.draw_shop(screen, player1, player2, font)
             refresh_UI = False
             pygame.display.flip()
+
         #dp.draw_UI(screen, player1, font)
-        # dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
         clock.tick(60)
 
     pygame.quit()

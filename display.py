@@ -21,13 +21,12 @@ def show_grid_matplotlib(grid):
 
 # pygame
 def draw_cell(screen: pygame.Surface, x, y):
-    cell_size = 40
+    cell_size = 10
     rect = pygame.Rect(x * cell_size, y * cell_size, cell_size - 1, cell_size - 1)
     pygame.draw.rect(screen, (255, 0, 0), rect)
 
 
-def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=16):
-    print("REFRESH SHOW GRID")
+def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=10):
 
     Ny = len(grid)
     Nx = len(grid[0])
@@ -58,7 +57,7 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=16):
             screen.blit(cache[tex], (x * cell_size, y * cell_size))
 
     for worm in wormz1:
-        tex = 3
+        tex = -1
         path = f"textures/worm1.png"
         if not os.path.exists(path):
             continue
@@ -69,7 +68,7 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=16):
         screen.blit(cache[tex], (worm.x_pos * cell_size, (Ny-worm.y_pos-1) * cell_size))
 
     for worm in wormz2:
-        tex = 3
+        tex = -1
         path = f"textures/worm2.png"
         if not os.path.exists(path):
             continue
@@ -82,12 +81,12 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=16):
 
 weapon_cache = {}
 
-def display_weapon(screen, traj_x, traj_y, cell_size=16):
+def display_weapon(screen, traj_x, traj_y, cell_size=10):
 
     global weapon_cache
 
-    Nx = 200
-    Ny = 100
+    Nx = 192
+    Ny = 108
 
     tex = "weapon1"
 
@@ -103,8 +102,6 @@ def display_weapon(screen, traj_x, traj_y, cell_size=16):
     )
 
 def draw_shop(screen, player1, player2, font):
-    print("REFRESH SHOW SHOP")
-
     width = screen.get_width()
 
     pygame.draw.rect(screen, (100, 80, 80), pygame.Rect(width - 650, 10, 200, 40))

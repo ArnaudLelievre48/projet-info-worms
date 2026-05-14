@@ -1,6 +1,6 @@
 # adds shapes to the grid
 
-Nx, Ny = 200, 100
+Nx, Ny = 192, 108
 
 def rectangle(x0,y0,dx,dy, grid, object_id=999, material=1, texture=1):
     for x in range(dx):
