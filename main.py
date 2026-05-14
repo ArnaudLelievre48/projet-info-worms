@@ -49,13 +49,14 @@ GRID = shapes.rectangle(
 
 
 player1 = assets.Player()
-weapon1 = player1.Weapons()
-weapon2 = player1.Weapons()
-weapon3 = player1.Weapons()
-player1.weapons.append(weapon1)
-player1.weapons.append(weapon2)
-player1.weapons.append(weapon3)
 player2 = assets.Player()
+
+for i in range(3):
+    weapon1 = player1.Weapons()
+    weapon2 = player2.Weapons()
+    player1.weapons.append(weapon1)
+    player2.weapons.append(weapon2)
+
 
 players = [player1, player2]
 player_id = 0
@@ -146,6 +147,13 @@ if backend == "PYGAME":
         if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_RETURN):
             player_id = (player_id+1)%2
             print("PLAYER ID : ", player_id)
+            screen.fill((0, 0, 0))
+            refresh_UI = True
+
+        if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_b):
+            weapon = players[player_id].Weapons()
+            players[player_id].weapons.append(weapon)
+            players[player_id].money -= 100
             screen.fill((0, 0, 0))
             refresh_UI = True
 
