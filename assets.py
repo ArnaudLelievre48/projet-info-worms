@@ -25,6 +25,77 @@ class Player:
                     quit()
                 return
 
+    def to_dict(self):
+        return {
+            "money": self.money,
+            "wormz" : [ {
+                "id": w.worm_id,
+                "x": w.x_pos,
+                "y": w.y_pos,
+                "health": w.health,
+                "range": w.range,
+                "weight": w.weight
+            } for w in self.wormz ],
+            "weapons": [
+                [ {
+                    "radius_range": m.radius_range,
+                    "radius_explosion": m.radius_explosion,
+                    "radius_break": m.radius_break,
+                    "damage": m.damage
+                } for m in self.weapons[0] ],
+                [ {
+                    "radius_range": s.radius_range,
+                    "radius_explosion": s.radius_explosion,
+                    "radius_break": s.radius_break,
+                    "damage": s.damage
+                } for s in self.weapons[1] ]
+            ]
+        }
+
+    @staticmethod
+    def from_dict(data):
+        player = Player()
+
+        player.money = data["money"]
+
+        player.wormz = [
+            Player.Worm(
+                x_pos=w["x"],
+                y_pos=w["y"],
+                health=w["health"],
+                range=w["range"],
+                weight=w["weight"],
+                worm_id=w["id"]
+            )
+            for w in data["wormz"]
+        ]
+
+        player.weapons = [
+            [
+                Player.missile()  # on reconstruit puis on écrase les attributs
+                for m in data["weapons"][0]
+            ],
+            [
+                Player.strike()
+                for s in data["weapons"][1]
+            ]
+        ]
+
+        # remise des attributs weapons (important)
+        for obj, saved in zip(player.weapons[0], data["weapons"][0]):
+            obj.radius_range = saved["radius_range"]
+            obj.radius_explosion = saved["radius_explosion"]
+            obj.radius_break = saved["radius_break"]
+            obj.damage = saved["damage"]
+
+        for obj, saved in zip(player.weapons[1], data["weapons"][1]):
+            obj.radius_range = saved["radius_range"]
+            obj.radius_explosion = saved["radius_explosion"]
+            obj.radius_break = saved["radius_break"]
+            obj.damage = saved["damage"]
+
+        return player
+
 
     class Worm:
         def __init__(self, x_pos, y_pos, health=3, range=100, weight=5, worm_id=None):

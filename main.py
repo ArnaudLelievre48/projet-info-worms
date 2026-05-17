@@ -1,13 +1,109 @@
 #!/bin/python3
 # import matplotlib.pyplot as plt
+import io
+import json
+import os
+import sqlite3
+
+import matplotlib.image as mpimg
 import numpy as np
 import pygame
-import matplotlib.image as mpimg
 
 import assets
 import display as dp
 import physics
 import shapes
+
+# fonctions de la base de DB
+
+
+# liste les sauvegardes disponibles
+def list_saves():
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    cur.execute("SELECT id FROM saves ORDER BY id")
+    rows = cur.fetchall()
+
+    conn.close()
+
+    print("Available saves:")
+    for (save_id,) in rows:
+        print(f"- {save_id}")
+
+    return [r[0] for r in rows]
+
+
+# à ne lancer qu'une fois
+def init_db():
+    conn = sqlite3.connect("game.db")
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS saves (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            grid BLOB NOT NULL,
+            players TEXT NOT NULL
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+# vérifie si la DB exite, si elle existe pas, on lance init_db()
+def ensure_db_exists(db_path="game.db"):
+    if not os.path.exists(db_path):
+        print("DB not found → initializing...")
+        init_db()
+    else:
+        print("DB already exists.")
+
+
+ensure_db_exists()
+DB_PATH = os.path.join(os.path.dirname(__file__), "game.db")
+
+
+# save
+def save_game(grid, players):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    # grid → bytes
+    buffer = io.BytesIO()
+    np.save(buffer, grid)
+    grid_blob = buffer.getvalue()
+
+    # players → JSON
+    state_json = json.dumps(players)
+
+    cur.execute(
+        "INSERT INTO saves (grid, players) VALUES (?, ?)", (grid_blob, state_json)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def load_game(save_id):
+    conn = sqlite3.connect("game.db")
+    cur = conn.cursor()
+
+    cur.execute("SELECT grid, players FROM saves WHERE id=?", (save_id,))
+    grid_blob, state_json = cur.fetchone()
+
+    buffer = io.BytesIO(grid_blob)
+    grid = np.load(buffer)
+
+    players = json.loads(state_json)
+
+    conn.close()
+    return (
+        grid,
+        assets.Player.from_dict(players[0]),
+        assets.Player.from_dict(players[1]),
+    )
+
 
 # backend = "MATPLOTLIB"
 backend = "PYGAME"
@@ -30,46 +126,51 @@ bridge1 = mpimg.imread("map/bridge1.png")
 bridge2 = mpimg.imread("map/bridge2.png")
 bridge3 = mpimg.imread("map/bridge3.png")
 bridge4 = mpimg.imread("map/bridge4.png")
-dirt_pixel = ground[99,0]
-grass_pixel = ground[86,0]
-bridge_pixel = bridge1[35,33]
+dirt_pixel = ground[99, 0]
+grass_pixel = ground[86, 0]
+bridge_pixel = bridge1[35, 33]
 
 for y in range(Ny):
     for x in range(Nx):
-        if ground[y,x][3] != 0.:
-            if (ground[y,x] == dirt_pixel).all():
-                GRID[Ny-y-1][x] = (1, -1, 3)
-            if (ground[y,x] == grass_pixel).all():
-                GRID[Ny-y-1][x] = (1, -1, 4)
-        if bridge1[y,x][3] != 0.:
-            GRID[Ny-y-1][x] = (1, 1, 5)
-        if bridge2[y,x][3] != 0.:
-            GRID[Ny-y-1][x] = (1, 2, 5)
-        if bridge3[y,x][3] != 0.:
-            GRID[Ny-y-1][x] = (1, 3, 5)
-        if bridge4[y,x][3] != 0.:
-            GRID[Ny-y-1][x] = (1, 4, 5)
+        if ground[y, x][3] != 0.0:
+            if (ground[y, x] == dirt_pixel).all():
+                GRID[Ny - y - 1][x] = (1, -1, 3)
+            if (ground[y, x] == grass_pixel).all():
+                GRID[Ny - y - 1][x] = (1, -1, 4)
+        if bridge1[y, x][3] != 0.0:
+            GRID[Ny - y - 1][x] = (1, 1, 5)
+        if bridge2[y, x][3] != 0.0:
+            GRID[Ny - y - 1][x] = (1, 2, 5)
+        if bridge3[y, x][3] != 0.0:
+            GRID[Ny - y - 1][x] = (1, 3, 5)
+        if bridge4[y, x][3] != 0.0:
+            GRID[Ny - y - 1][x] = (1, 4, 5)
 
 
 # dp.show_grid(GRID)
 # plt.pause(0.1)
 
+valid_ids = list_saves()
 
-player1 = assets.Player()
-player2 = assets.Player()
+print("Valid save ids:", valid_ids)
 
-worm1 = player1.Worm(25, Ny-59-1, worm_id=0)
-worm2 = player2.Worm(163, Ny-41-1, worm_id=0)
-
-
-player1.wormz.append(worm1)
-player2.wormz.append(worm2)
-
-for i in range(3):
-    weapon1 = player1.missile()
-    weapon2 = player2.missile()
-    player1.weapons[0].append(weapon1)
-    player2.weapons[0].append(weapon2)
+save_id = int(input("Enter save id: "))
+if save_id not in valid_ids:
+    print("Invalid save id.")
+    print("Starting a new game !")
+    player1 = assets.Player()
+    player2 = assets.Player()
+    worm1 = player1.Worm(25, Ny - 59 - 1, worm_id=0)
+    worm2 = player2.Worm(163, Ny - 41 - 1, worm_id=0)
+    player1.wormz.append(worm1)
+    player2.wormz.append(worm2)
+    for i in range(3):
+        weapon1 = player1.missile()
+        weapon2 = player2.missile()
+        player1.weapons[0].append(weapon1)
+        player2.weapons[0].append(weapon2)
+else:
+    GRID, player1, player2 = load_game(save_id)
 
 
 players = [player1, player2]
@@ -116,13 +217,16 @@ if backend == "PYGAME":
     nb_actions = 0
 
     while running:
-
         # gestion des inputs
         event = pygame.event.poll()
 
         # si la fenetre change de taille
         info = pygame.display.Info()
-        if (screen_width != info.current_w) or (screen_height != info.current_h) or ( (event.type == pygame.KEYDOWN) and (event.key == pygame.K_r) ):
+        if (
+            (screen_width != info.current_w)
+            or (screen_height != info.current_h)
+            or ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_r))
+        ):
             screen_width = info.current_w
             screen_height = info.current_h
             screen = pygame.display.set_mode((screen_width, screen_height))
@@ -130,13 +234,23 @@ if backend == "PYGAME":
             screen.fill((0, 255, 255))
             refresh_UI = True
 
-
         # quitter le jeu
         if event.type == pygame.QUIT:
             running = False
 
+        # enregistre et quitte le jeu
+        if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_q):
+            print("Sauvegarde en cours...")
+            save_game(GRID, [player.to_dict() for player in players])
+            running = False
+            print("Sauvegarde terminée.")
+
         # ajout de worm
-        if (event.type == pygame.MOUSEBUTTONDOWN) and (event.button == 1) and (nb_actions < 3):
+        if (
+            (event.type == pygame.MOUSEBUTTONDOWN)
+            and (event.button == 1)
+            and (nb_actions < 3)
+        ):
             if players[player_id].money >= 200:
                 players[player_id].money -= 200
                 mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -145,7 +259,9 @@ if backend == "PYGAME":
                 if GRID[grid_y][grid_x][0] == 0:
                     nb_actions += 1
                     print("NB_ACTIONS : ", nb_actions, " / 3")
-                    new_worm = players[player_id].Worm(grid_x, grid_y, worm_id=len(players[player_id].wormz))
+                    new_worm = players[player_id].Worm(
+                        grid_x, grid_y, worm_id=len(players[player_id].wormz)
+                    )
                     players[player_id].wormz.append(new_worm)
                     refresh_UI = True
                 else:
@@ -161,7 +277,8 @@ if backend == "PYGAME":
                     (255, 0, 0),
                     (
                         players[player_id].wormz[id_worm_launch].x_pos * cell_size,
-                        (Ny - players[player_id].wormz[id_worm_launch].y_pos - 1) * cell_size,
+                        (Ny - players[player_id].wormz[id_worm_launch].y_pos - 1)
+                        * cell_size,
                     ),
                     cell_size,
                 )
@@ -173,7 +290,7 @@ if backend == "PYGAME":
         # finir un tour (changer de joueur)
         if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_RETURN):
             id_worm_launch = 0
-            player_id = (player_id+1)%2
+            player_id = (player_id + 1) % 2
             weapon_type = 0
             nb_actions = 0
             print("PLAYER ID : ", player_id)
@@ -181,7 +298,12 @@ if backend == "PYGAME":
             refresh_UI = True
 
         # acheter missile
-        if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_m) and (nb_actions < 3)  and (players[player_id].money >= 150):
+        if (
+            (event.type == pygame.KEYDOWN)
+            and (event.key == pygame.K_m)
+            and (nb_actions < 3)
+            and (players[player_id].money >= 150)
+        ):
             nb_actions += 1
             print("NB_ACTIONS : ", nb_actions, " / 3")
             weapon = players[player_id].missile()
@@ -191,7 +313,12 @@ if backend == "PYGAME":
             refresh_UI = True
 
         # acheter strike , coute 2 actions
-        if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_s) and (nb_actions < 2) and (players[player_id].money >= 300):
+        if (
+            (event.type == pygame.KEYDOWN)
+            and (event.key == pygame.K_s)
+            and (nb_actions < 2)
+            and (players[player_id].money >= 300)
+        ):
             nb_actions += 2
             print("NB_ACTIONS : ", nb_actions, " / 3")
             weapon = players[player_id].strike()
@@ -200,15 +327,20 @@ if backend == "PYGAME":
             screen.fill((0, 255, 255))
             refresh_UI = True
 
-
         # lancer un missile / strike
-        if (event.type == pygame.MOUSEBUTTONDOWN) and (event.button == 3) and (nb_actions < 3):
+        if (
+            (event.type == pygame.MOUSEBUTTONDOWN)
+            and (event.button == 3)
+            and (nb_actions < 3)
+        ):
             nb_actions += 1
             print("NB_ACTIONS : ", nb_actions, " / 3")
             mouse_x, mouse_y = pygame.mouse.get_pos()
             grid_x = int(mouse_x // cell_size)
             grid_y = int(Ny - 1 - (mouse_y // cell_size))
-            if (players[player_id].weapons[weapon_type] != []) and (players[player_id].wormz != []):
+            if (players[player_id].weapons[weapon_type] != []) and (
+                players[player_id].wormz != []
+            ):
                 x_0_launch = players[player_id].wormz[id_worm_launch].x_pos
                 y_0_launch = players[player_id].wormz[id_worm_launch].y_pos
                 weapon = players[player_id].weapons[weapon_type].pop()
@@ -219,7 +351,6 @@ if backend == "PYGAME":
                 i = 0
                 exploded = False
                 while (i < len(trajectory[0])) and (not exploded):
-
                     event = pygame.event.poll()
                     for event in pygame.event.get():
                         if event.type == pygame.QUIT:
@@ -244,7 +375,7 @@ if backend == "PYGAME":
                                         worm.take_damage(weapon.damage)
                                         if worm.health <= 0:
                                             player.kill_worm(worm.worm_id)
-                                            players[(k+1)%2].money += 150
+                                            players[(k + 1) % 2].money += 150
                                     elif (
                                         (worm.x_pos - int(trajectory[0][i])) ** 2
                                         + (worm.y_pos - int(trajectory[1][i])) ** 2
@@ -252,7 +383,7 @@ if backend == "PYGAME":
                                         worm.take_damage(weapon.damage / 2)
                                         if worm.health <= 0:
                                             player.kill_worm(worm.worm_id)
-                                            players[(k+1)%2].money += 150
+                                            players[(k + 1) % 2].money += 150
                                     print("health : ", worm.health)
                             GRID = shapes.transform(
                                 GRID,
@@ -291,7 +422,6 @@ if backend == "PYGAME":
         if moved:
             refresh_UI = True
         while moved:
-
             event = pygame.event.poll()
             if event.type == pygame.QUIT:
                 running = False
@@ -304,14 +434,13 @@ if backend == "PYGAME":
             pygame.display.flip()
             clock.tick(60)
 
-
         if refresh_UI:
             dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
             dp.draw_shop(screen, player1, player2, font)
             refresh_UI = False
             pygame.display.flip()
 
-        #dp.draw_UI(screen, player1, font)
+        # dp.draw_UI(screen, player1, font)
         clock.tick(60)
 
     pygame.quit()
