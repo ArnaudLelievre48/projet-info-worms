@@ -66,15 +66,15 @@ player1.wormz.append(worm1)
 player2.wormz.append(worm2)
 
 for i in range(3):
-    weapon1 = player1.Weapons()
-    weapon2 = player2.Weapons()
-    player1.weapons.append(weapon1)
-    player2.weapons.append(weapon2)
+    weapon1 = player1.missile()
+    weapon2 = player2.missile()
+    player1.weapons[0].append(weapon1)
+    player2.weapons[0].append(weapon2)
 
 
 players = [player1, player2]
 player_id = 0
-
+weapon_type = 0
 
 # if backend == "MATPLOTLIB":
 #    plt.ion()
@@ -166,37 +166,52 @@ if backend == "PYGAME":
                     cell_size,
                 )
                 refresh_UI = True
+        if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_LSHIFT):
+            weapon_type = (weapon_type + 1) % 2
+            print("WEAPON_TYPE : ", weapon_type)
 
         # finir un tour (changer de joueur)
         if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_RETURN):
             id_worm_launch = 0
             player_id = (player_id+1)%2
+            weapon_type = 0
             nb_actions = 0
             print("PLAYER ID : ", player_id)
             screen.fill((0, 255, 255))
             refresh_UI = True
 
         # acheter missile
-        if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_b) and (nb_actions < 3):
+        if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_m) and (nb_actions < 3)  and (players[player_id].money >= 150):
             nb_actions += 1
             print("NB_ACTIONS : ", nb_actions, " / 3")
-            weapon = players[player_id].Weapons()
-            players[player_id].weapons.append(weapon)
-            players[player_id].money -= 100
+            weapon = players[player_id].missile()
+            players[player_id].weapons[0].append(weapon)
+            players[player_id].money -= 150
             screen.fill((0, 255, 255))
             refresh_UI = True
 
-        # lancer un missile
+        # acheter strike , coute 2 actions
+        if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_s) and (nb_actions < 2) and (players[player_id].money >= 300):
+            nb_actions += 2
+            print("NB_ACTIONS : ", nb_actions, " / 3")
+            weapon = players[player_id].strike()
+            players[player_id].weapons[1].append(weapon)
+            players[player_id].money -= 300
+            screen.fill((0, 255, 255))
+            refresh_UI = True
+
+
+        # lancer un missile / strike
         if (event.type == pygame.MOUSEBUTTONDOWN) and (event.button == 3) and (nb_actions < 3):
             nb_actions += 1
             print("NB_ACTIONS : ", nb_actions, " / 3")
             mouse_x, mouse_y = pygame.mouse.get_pos()
             grid_x = int(mouse_x // cell_size)
             grid_y = int(Ny - 1 - (mouse_y // cell_size))
-            if (players[player_id].weapons != []) and (players[player_id].wormz != []):
+            if (players[player_id].weapons[weapon_type] != []) and (players[player_id].wormz != []):
                 x_0_launch = players[player_id].wormz[id_worm_launch].x_pos
                 y_0_launch = players[player_id].wormz[id_worm_launch].y_pos
-                weapon = players[player_id].weapons.pop()
+                weapon = players[player_id].weapons[weapon_type].pop()
                 trajectory = weapon.launch_trajectory(
                     grid_x, grid_y, x_0_launch, y_0_launch
                 )

@@ -1,14 +1,14 @@
-from abc import ABC, ABCMeta
+from abc import ABC, ABCMeta, abstractmethod
 import numpy as np
 
-class Player(metaclass=ABCMeta):
+class Player:
 
     def __init__(self, wormz=None, weapons=None, money=1000):
         if wormz is None:
             wormz = []
 
         if weapons is None:
-            weapons = []
+            weapons = [[],[]] # 0 for missiles, 1 for strikes
 
         self.wormz = wormz
         self.weapons = weapons
@@ -52,15 +52,22 @@ class Player(metaclass=ABCMeta):
                     self.x_pos -= 1
 
 
-    class Weapons:
+    class Weapons (metaclass=ABCMeta):
         def __init__(self, radius_range=100, radius_explosion=5, radius_break=8, damage=3):
             self.radius_range = radius_range
             self.radius_explosion = radius_explosion
             self.radius_break = radius_break
             self.damage = damage
 
+        @abstractmethod
         def launch_trajectory(self, x_target, y_target, x_pos, y_pos):
+            pass
 
+    class missile (Weapons):
+        def __init__(self):
+            super().__init__(radius_range=100, radius_explosion=5, radius_break=8, damage=3)
+
+        def launch_trajectory(self, x_target, y_target, x_pos, y_pos):
             # eq trajectory : y = -g/2 (x-x_target)*(x-x_pos) + ((y_target-y_pos)/(x_target - x_pos))*(x-x_pos) + y_pos
             X = np.linspace(x_pos, x_target, 50) # 20 points
             if x_target == x_pos:
@@ -68,6 +75,19 @@ class Player(metaclass=ABCMeta):
             else:
                 Y = -0.01 * (X-x_target)*(X - x_pos) + ((y_target - y_pos)/(x_target - x_pos))*(X - x_pos) + y_pos
             return(X, Y)
+
+
+
+    class strike(Weapons):
+        def __init__(self):
+            super().__init__(radius_range=float("inf"), radius_explosion=5, radius_break=15, damage=2)
+
+        def launch_trajectory(self, x_target, y_target, x_pos, y_pos):
+            # trajectoire verticale
+            X = np.linspace(x_target, x_target, 50) # 20 points
+            Y = np.linspace(y_target+108, y_target, 50)
+            return(X, Y)
+
 
 
 
