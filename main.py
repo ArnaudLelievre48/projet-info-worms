@@ -437,6 +437,9 @@ if backend == "PYGAME":
         if refresh_UI:
             dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
             dp.draw_shop(screen, player1, player2, font)
+            dp.show_UI(
+                screen, player1, player2, font, player_id, weapon_type, nb_actions
+            )
             refresh_UI = False
             pygame.display.flip()
 

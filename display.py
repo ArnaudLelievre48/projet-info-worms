@@ -1,11 +1,11 @@
 # display with matplotlib
 
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.colors import ListedColormap
-import pygame
 import os
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pygame
+from matplotlib.colors import ListedColormap
 
 cmap = ListedColormap(["gray", "red", "orange"])
 
@@ -38,7 +38,6 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=10):
 
     for y in range(Ny):
         for x in range(Nx):
-
             material, obj, tex = grid[Ny - 1 - y][x]
 
             # AIR = explicitly do nothing (fine ONLY because screen is cleared)
@@ -65,7 +64,9 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=10):
         img = pygame.image.load(path).convert_alpha()
         img = pygame.transform.scale(img, (cell_size, cell_size))
         cache[tex] = img
-        screen.blit(cache[tex], (worm.x_pos * cell_size, (Ny-worm.y_pos-1) * cell_size))
+        screen.blit(
+            cache[tex], (worm.x_pos * cell_size, (Ny - worm.y_pos - 1) * cell_size)
+        )
 
     for worm in wormz2:
         tex = -1
@@ -76,10 +77,13 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=10):
         img = pygame.image.load(path).convert_alpha()
         img = pygame.transform.scale(img, (cell_size, cell_size))
         cache[tex] = img
-        screen.blit(cache[tex], (worm.x_pos * cell_size, (Ny-worm.y_pos-1) * cell_size))
+        screen.blit(
+            cache[tex], (worm.x_pos * cell_size, (Ny - worm.y_pos - 1) * cell_size)
+        )
 
 
 weapon_cache = {}
+
 
 def display_weapon(screen, traj_x, traj_y, cell_size=10):
 
@@ -96,10 +100,8 @@ def display_weapon(screen, traj_x, traj_y, cell_size=10):
         img = pygame.transform.scale(img, (cell_size, cell_size))
         weapon_cache[tex] = img
 
-    screen.blit(
-        weapon_cache[tex],
-        (traj_x * cell_size, (Ny - traj_y - 1) * cell_size)
-    )
+    screen.blit(weapon_cache[tex], (traj_x * cell_size, (Ny - traj_y - 1) * cell_size))
+
 
 def draw_shop(screen, player1, player2, font):
     width = screen.get_width()
@@ -107,36 +109,48 @@ def draw_shop(screen, player1, player2, font):
     pygame.draw.rect(screen, (100, 80, 80), pygame.Rect(width - 650, 10, 200, 40))
     pygame.draw.rect(screen, (100, 80, 80), pygame.Rect(width - 450, 10, 200, 40))
 
+    txt1 = font.render(f"Weapon : {100}", True, (255, 255, 255))
 
-    txt1 = font.render(
-        f"Weapon : {100}",
-        True,
-        (255,255,255)
-    )
-
-    txt2 = font.render(
-        f"Worm : {200}",
-        True,
-        (255,255,255)
-    )
-
-    money1_txt = font.render(
-        f"Money : {player1.money}",
-        True,
-        (255,255,0)
-    )
-
-    money2_txt = font.render(
-        f"Money : {player2.money}",
-        True,
-        (255,255,0)
-    )
-
+    txt2 = font.render(f"Worm : {200}", True, (255, 255, 255))
 
     screen.blit(txt1, (100, 20))
     screen.blit(txt2, (300, 20))
-    screen.blit(money1_txt, (500, 20))
-    screen.blit(txt1, (width -600, 20))
+    screen.blit(txt1, (width - 600, 20))
     screen.blit(txt2, (width - 400, 20))
-    screen.blit(money2_txt, (width - 200, 20))
 
+
+def show_UI(
+    screen, player1, player2, font, player_id, weapon_type, nb_actions, cell_size=10
+):
+    txtmoney1 = font.render(f"player1's money: {player1.money}", True, (255, 255, 255))
+    txtmoney2 = font.render(f"player2's money: {player2.money}", True, (255, 255, 255))
+
+    txtmissile1 = font.render(
+        f"player1's missiles: {len(player1.weapons[0])}", True, (255, 255, 255)
+    )
+    txtstrike1 = font.render(
+        f"player1's missiles: {len(player1.weapons[1])}", True, (255, 255, 255)
+    )
+
+    txtmissile2 = font.render(
+        f"player2's missiles: {len(player2.weapons[0])}", True, (255, 255, 255)
+    )
+    txtstrike2 = font.render(
+        f"player2's missiles: {len(player2.weapons[1])}", True, (255, 255, 255)
+    )
+
+    txt_player = font.render(f"player {player_id}", True, (255, 255, 255))
+    txt_weapon_type = font.render(f"weapon type: {weapon_type}", True, (255, 255, 255))
+    txt_nb_actions = font.render(f"nb actions: {nb_actions} / 3", True, (255, 255, 255))
+
+    screen.blit(txtmoney1, (10 * cell_size, 30 * cell_size))
+    screen.blit(txtmissile1, (10 * cell_size, 35 * cell_size))
+    screen.blit(txtstrike1, (10 * cell_size, 40 * cell_size))
+
+    screen.blit(txtmoney2, (158 * cell_size, 30 * cell_size))
+    screen.blit(txtmissile2, (158 * cell_size, 35 * cell_size))
+    screen.blit(txtstrike2, (158 * cell_size, 40 * cell_size))
+
+    screen.blit(txt_player, (96 * cell_size, 10 * cell_size))
+    screen.blit(txt_weapon_type, (96 * cell_size, 15 * cell_size))
+    screen.blit(txt_nb_actions, (96 * cell_size, 20 * cell_size))

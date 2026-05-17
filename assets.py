@@ -1,14 +1,15 @@
 from abc import ABC, ABCMeta, abstractmethod
+
 import numpy as np
 
-class Player:
 
+class Player:
     def __init__(self, wormz=None, weapons=None, money=1000):
         if wormz is None:
             wormz = []
 
         if weapons is None:
-            weapons = [[],[]] # 0 for missiles, 1 for strikes
+            weapons = [[], []]  # 0 for missiles, 1 for strikes
 
         self.wormz = wormz
         self.weapons = weapons
@@ -28,28 +29,37 @@ class Player:
     def to_dict(self):
         return {
             "money": self.money,
-            "wormz" : [ {
-                "id": w.worm_id,
-                "x": w.x_pos,
-                "y": w.y_pos,
-                "health": w.health,
-                "range": w.range,
-                "weight": w.weight
-            } for w in self.wormz ],
+            "wormz": [
+                {
+                    "id": w.worm_id,
+                    "x": w.x_pos,
+                    "y": w.y_pos,
+                    "health": w.health,
+                    "range": w.range,
+                    "weight": w.weight,
+                }
+                for w in self.wormz
+            ],
             "weapons": [
-                [ {
-                    "radius_range": m.radius_range,
-                    "radius_explosion": m.radius_explosion,
-                    "radius_break": m.radius_break,
-                    "damage": m.damage
-                } for m in self.weapons[0] ],
-                [ {
-                    "radius_range": s.radius_range,
-                    "radius_explosion": s.radius_explosion,
-                    "radius_break": s.radius_break,
-                    "damage": s.damage
-                } for s in self.weapons[1] ]
-            ]
+                [
+                    {
+                        "radius_range": m.radius_range,
+                        "radius_explosion": m.radius_explosion,
+                        "radius_break": m.radius_break,
+                        "damage": m.damage,
+                    }
+                    for m in self.weapons[0]
+                ],
+                [
+                    {
+                        "radius_range": s.radius_range,
+                        "radius_explosion": s.radius_explosion,
+                        "radius_break": s.radius_break,
+                        "damage": s.damage,
+                    }
+                    for s in self.weapons[1]
+                ],
+            ],
         }
 
     @staticmethod
@@ -65,7 +75,7 @@ class Player:
                 health=w["health"],
                 range=w["range"],
                 weight=w["weight"],
-                worm_id=w["id"]
+                worm_id=w["id"],
             )
             for w in data["wormz"]
         ]
@@ -75,10 +85,7 @@ class Player:
                 Player.missile()  # on reconstruit puis on écrase les attributs
                 for m in data["weapons"][0]
             ],
-            [
-                Player.strike()
-                for s in data["weapons"][1]
-            ]
+            [Player.strike() for s in data["weapons"][1]],
         ]
 
         # remise des attributs weapons (important)
@@ -96,12 +103,11 @@ class Player:
 
         return player
 
-
     class Worm:
         def __init__(self, x_pos, y_pos, health=3, range=100, weight=5, worm_id=None):
-            self.health = health # nombre de degats avant de mourrir
-            self.range = range # distance de missiles à viser
-            self.weight = weight # nombre de block min en dessous pour pas casser
+            self.health = health  # nombre de degats avant de mourrir
+            self.range = range  # distance de missiles à viser
+            self.weight = weight  # nombre de block min en dessous pour pas casser
             self.x_pos, self.y_pos = x_pos, y_pos
             self.worm_id = worm_id
 
@@ -109,22 +115,33 @@ class Player:
             self.health -= damage
 
         def is_supposed_to_fall(self, GRID):
-            return ( (GRID[self.y_pos-1][self.x_pos][0] == 0) or (( (0 < self.x_pos)  and (self.x_pos < 129) ) and ( (GRID[self.y_pos-1][self.x_pos+1][0] == 0) or (GRID[self.y_pos-1][self.x_pos-1][0] == 0) )) )
+            return (GRID[self.y_pos - 1][self.x_pos][0] == 0) or (
+                ((0 < self.x_pos) and (self.x_pos < 129))
+                and (
+                    (GRID[self.y_pos - 1][self.x_pos + 1][0] == 0)
+                    or (GRID[self.y_pos - 1][self.x_pos - 1][0] == 0)
+                )
+            )
 
         def gravity(self, GRID):
-            if GRID[self.y_pos-1][self.x_pos][0] == 0: # si AIR en dessous
+            if GRID[self.y_pos - 1][self.x_pos][0] == 0:  # si AIR en dessous
                 self.y_pos -= 1
-            elif ( (0 < self.x_pos)  and (self.x_pos < 192) ):
-                if GRID[self.y_pos-1][self.x_pos+1][0] == 0: # si AIR en diagonale gauche
+            elif (0 < self.x_pos) and (self.x_pos < 192):
+                if (
+                    GRID[self.y_pos - 1][self.x_pos + 1][0] == 0
+                ):  # si AIR en diagonale gauche
                     self.y_pos -= 1
                     self.x_pos += 1
-                elif GRID[self.y_pos-1][self.x_pos-1][0] == 0: # si AIR en diagonale droite
+                elif (
+                    GRID[self.y_pos - 1][self.x_pos - 1][0] == 0
+                ):  # si AIR en diagonale droite
                     self.y_pos -= 1
                     self.x_pos -= 1
 
-
-    class Weapons (metaclass=ABCMeta):
-        def __init__(self, radius_range=100, radius_explosion=5, radius_break=8, damage=3):
+    class Weapons(metaclass=ABCMeta):
+        def __init__(
+            self, radius_range=100, radius_explosion=5, radius_break=8, damage=3
+        ):
             self.radius_range = radius_range
             self.radius_explosion = radius_explosion
             self.radius_break = radius_break
@@ -134,32 +151,33 @@ class Player:
         def launch_trajectory(self, x_target, y_target, x_pos, y_pos):
             pass
 
-    class missile (Weapons):
+    class missile(Weapons):
         def __init__(self):
-            super().__init__(radius_range=100, radius_explosion=5, radius_break=8, damage=3)
+            super().__init__(
+                radius_range=100, radius_explosion=5, radius_break=8, damage=3
+            )
 
         def launch_trajectory(self, x_target, y_target, x_pos, y_pos):
             # eq trajectory : y = -g/2 (x-x_target)*(x-x_pos) + ((y_target-y_pos)/(x_target - x_pos))*(x-x_pos) + y_pos
-            X = np.linspace(x_pos, x_target, 50) # 20 points
+            X = np.linspace(x_pos, x_target, 50)  # 20 points
             if x_target == x_pos:
                 Y = np.linspace(y_pos, y_target, 50)
             else:
-                Y = -0.01 * (X-x_target)*(X - x_pos) + ((y_target - y_pos)/(x_target - x_pos))*(X - x_pos) + y_pos
-            return(X, Y)
-
-
+                Y = (
+                    -0.01 * (X - x_target) * (X - x_pos)
+                    + ((y_target - y_pos) / (x_target - x_pos)) * (X - x_pos)
+                    + y_pos
+                )
+            return (X, Y)
 
     class strike(Weapons):
         def __init__(self):
-            super().__init__(radius_range=float("inf"), radius_explosion=5, radius_break=15, damage=2)
+            super().__init__(
+                radius_range=400, radius_explosion=5, radius_break=15, damage=2
+            )
 
         def launch_trajectory(self, x_target, y_target, x_pos, y_pos):
             # trajectoire verticale
-            X = np.linspace(x_target, x_target, 50) # 20 points
-            Y = np.linspace(y_target+108, y_target, 50)
-            return(X, Y)
-
-
-
-
-
+            X = np.linspace(x_target, x_target, 50)  # 20 points
+            Y = np.linspace(y_target + 108, y_target, 50)
+            return (X, Y)
