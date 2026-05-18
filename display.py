@@ -139,18 +139,22 @@ def show_UI(
         f"player2's missiles: {len(player2.weapons[1])}", True, (255, 255, 255)
     )
 
-    txt_player = font.render(f"player {player_id}", True, (255, 255, 255))
-    txt_weapon_type = font.render(f"weapon type: {weapon_type}", True, (255, 255, 255))
+    txt_player = font.render(f"player {player_id+1}", True, (255, 255, 255))
+    if weapon_type == 0:
+        weapon_name = "Missile"
+    if weapon_type ==1 :
+        weapon_name = "Strike"
+    txt_weapon_type = font.render(f"weapon type: {weapon_name}", True, (255, 255, 255))
     txt_nb_actions = font.render(f"nb actions: {nb_actions} / 3", True, (255, 255, 255))
 
-    screen.blit(txtmoney1, (10 * cell_size, 30 * cell_size))
-    screen.blit(txtmissile1, (10 * cell_size, 35 * cell_size))
-    screen.blit(txtstrike1, (10 * cell_size, 40 * cell_size))
+    screen.blit(txtmoney1, (10 * cell_size, 15 * cell_size))
+    screen.blit(txtmissile1, (10 * cell_size, 20 * cell_size))
+    screen.blit(txtstrike1, (10 * cell_size, 25 * cell_size))
 
-    screen.blit(txtmoney2, (158 * cell_size, 30 * cell_size))
-    screen.blit(txtmissile2, (158 * cell_size, 35 * cell_size))
-    screen.blit(txtstrike2, (158 * cell_size, 40 * cell_size))
+    screen.blit(txtmoney2, (158 * cell_size, 15 * cell_size))
+    screen.blit(txtmissile2, (158 * cell_size, 20 * cell_size))
+    screen.blit(txtstrike2, (158 * cell_size, 25 * cell_size))
 
-    screen.blit(txt_player, (96 * cell_size, 10 * cell_size))
-    screen.blit(txt_weapon_type, (96 * cell_size, 15 * cell_size))
-    screen.blit(txt_nb_actions, (96 * cell_size, 20 * cell_size))
+    screen.blit(txt_player, (96 * cell_size, 5 * cell_size))
+    screen.blit(txt_weapon_type, (96 * cell_size, 10 * cell_size))
+    screen.blit(txt_nb_actions, (96 * cell_size, 15 * cell_size))

@@ -286,6 +286,8 @@ if backend == "PYGAME":
         if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_LSHIFT):
             weapon_type = (weapon_type + 1) % 2
             print("WEAPON_TYPE : ", weapon_type)
+            screen.fill((0, 255, 255))
+            refresh_UI = True
 
         # finir un tour (changer de joueur)
         if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_RETURN):
