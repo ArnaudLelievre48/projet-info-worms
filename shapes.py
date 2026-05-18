@@ -102,7 +102,13 @@ class HCircle(Shape):
                     grid[y + self.y0][x + self.x0 - self.r] = (self.material, self.object_id, self.texture)
         return grid
 
+
+
+
 def transform(grid, x_0, y_0, radius, material):
+    """
+    transforme de matériaux en un autre (solid -> AIR pour destruction, solid -> sable pour cassage) sur un certain rayon autour de : x_0, y_0
+    """
     # Fonction d'explosion : remplace les zones touchées par du vide (matériau 0) ou du sable (matériau 2)
     for x in range(Nx):
         for y in range(Ny):

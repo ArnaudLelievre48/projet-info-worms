@@ -53,7 +53,12 @@ SAND = 2
 #
 #    return new
 
+
 def step(grid, player1, player2):
+    """
+    met à jour la position des wormz et met à jour la grille, retourne aussi si l'affichage a besoin d'être rafraichi avec : moved
+    """
+
     # Initialisation de la détection de mouvement pour la boucle de rendu
     moved = False  # ← AJOUT
 

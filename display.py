@@ -12,6 +12,10 @@ cmap = ListedColormap(["gray", "red", "orange"])
 
 # matplotlib
 def show_grid_matplotlib(grid):
+    """
+    fonction qui a permis de débuger au début pour afficher dans matplotlib la GRID
+    """
+
     grid_show = np.array([[cell[0] for cell in row] for row in grid])
 
     plt.clf()
@@ -21,13 +25,19 @@ def show_grid_matplotlib(grid):
 
 # pygame
 def draw_cell(screen: pygame.Surface, x, y):
+    """
+    fonction permettant d'afficher une cellule de taille 10x10 : un bloc de la GRID
+    """
+
     cell_size = 10
     rect = pygame.Rect(x * cell_size, y * cell_size, cell_size - 1, cell_size - 1)
     pygame.draw.rect(screen, (255, 0, 0), rect)
 
 
 def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=10):
-
+    """
+    fonction permettant d'afficher la GRID avec les texture corresppondante au dessus (10px x 10px), ainsi que les wormz,  utilise du cache pour éviter d'avoir à re-render tout le temps
+    """
     Ny = len(grid)
     Nx = len(grid[0])
 
@@ -86,6 +96,9 @@ weapon_cache = {}
 
 
 def display_weapon(screen, traj_x, traj_y, cell_size=10):
+    """
+    fonction permettant l'affichage des weapons lors de leurs trajectoire
+    """
 
     global weapon_cache
 
@@ -104,12 +117,15 @@ def display_weapon(screen, traj_x, traj_y, cell_size=10):
 
 
 def draw_shop(screen, player1, player2, font):
+    """
+    permet d'afficher le prix des items pour les 2 joueurs, une feature envisagée aurait été d'appliquer des bonus et malus de prix, mais on a pas eu le temps...
+    """
     width = screen.get_width()
 
     pygame.draw.rect(screen, (100, 80, 80), pygame.Rect(width - 650, 10, 200, 40))
     pygame.draw.rect(screen, (100, 80, 80), pygame.Rect(width - 450, 10, 200, 40))
 
-    txt1 = font.render(f"Weapon : {100}", True, (255, 255, 255))
+    txt1 = font.render(f"Weapon : {100} | {300}", True, (255, 255, 255))
 
     txt2 = font.render(f"Worm : {200}", True, (255, 255, 255))
 
@@ -122,6 +138,9 @@ def draw_shop(screen, player1, player2, font):
 def show_UI(
     screen, player1, player2, font, player_id, weapon_type, nb_actions, cell_size=10
 ):
+    """
+    fonction permettant d'afficher l'UI : ensemble des informations descrivant qui joue, avec quelle arme, la quantité d'argent, de wormz, d'armes...
+    """
     txtmoney1 = font.render(f"player1's money: {player1.money}", True, (255, 255, 255))
     txtmoney2 = font.render(f"player2's money: {player2.money}", True, (255, 255, 255))
 

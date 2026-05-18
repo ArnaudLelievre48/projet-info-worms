@@ -5,6 +5,10 @@ import numpy as np
 
 class Player:
     def __init__(self, wormz=None, weapons=None, money=1000):
+        """
+        initialise la classe Player avec 1000 d'argent par défaut, et des listes / liste de liste vides pour wormz et weapons -> le remplissage de worm et weappons est géré dans main.py
+        """
+
         if wormz is None:
             wormz = []
 
@@ -16,6 +20,10 @@ class Player:
         self.money = money
 
     def kill_worm(self, worm_id):
+        """
+        parcours la liste de worm du joueur, et supprime le worm d'id : worm_id
+        """
+
         for i in range(len(self.wormz)):
             if self.wormz[i].worm_id == worm_id:
                 self.wormz.pop(i)
@@ -27,6 +35,10 @@ class Player:
                 return
 
     def to_dict(self):
+        """
+        encode dans un disctionnaire les informations du joueur afin d'écrire ces informations dans la DB
+        """
+
         return {
             "money": self.money,
             "wormz": [
@@ -64,6 +76,10 @@ class Player:
 
     @staticmethod
     def from_dict(data):
+        """
+        permet de créer les players en fonctions des données des joueurs récupérés depuis la DB (précédement encodés par : to_dict)
+        """
+
         player = Player()
 
         player.money = data["money"]
@@ -105,6 +121,10 @@ class Player:
 
     class Worm:
         def __init__(self, x_pos, y_pos, health=3, range=100, weight=5, worm_id=None):
+            """
+            initialise un worm avec 3 de vie, une position x et y, et un worm_id qui est par défaut None, les autres sont des features qui n'ont pas encore été pu être utilisées
+            """
+
             self.health = health  # nombre de degats avant de mourrir
             self.range = range  # distance de missiles à viser
             self.weight = weight  # nombre de block min en dessous pour pas casser
@@ -112,9 +132,17 @@ class Player:
             self.worm_id = worm_id
 
         def take_damage(self, damage):
+            """
+            met à jour la vie du worm en lui enlevant à sa vie : damage
+            """
+
             self.health -= damage
 
         def is_supposed_to_fall(self, GRID):
+            """
+            vérifie si le worm est censé tomber, ne le fait pas bouger pour autant
+            """
+
             return (GRID[self.y_pos - 1][self.x_pos][0] == 0) or (
                 ((0 < self.x_pos) and (self.x_pos < 129))
                 and (
@@ -124,6 +152,10 @@ class Player:
             )
 
         def gravity(self, GRID):
+            """
+            applique la gravité en changeant la position du worm de la meme manière que les grains de sable
+            """
+
             if GRID[self.y_pos - 1][self.x_pos][0] == 0:  # si AIR en dessous
                 self.y_pos -= 1
             elif (0 < self.x_pos) and (self.x_pos < 192):
@@ -142,6 +174,10 @@ class Player:
         def __init__(
             self, radius_range=100, radius_explosion=5, radius_break=8, damage=3
         ):
+            """
+            initialise un weapon avec un range, un radius_explosion; un radius_break et un quantité de damage
+            """
+
             self.radius_range = radius_range
             self.radius_explosion = radius_explosion
             self.radius_break = radius_break
@@ -149,6 +185,9 @@ class Player:
 
         @abstractmethod
         def launch_trajectory(self, x_target, y_target, x_pos, y_pos):
+            """
+            méthode abstraite qui définie la trajectoire que doit effectuer le weapon (missile ou strike)
+            """
             pass
 
     class missile(Weapons):
@@ -158,6 +197,9 @@ class Player:
             )
 
         def launch_trajectory(self, x_target, y_target, x_pos, y_pos):
+            """
+            trajectoire quadratique entre x_target, y_target et x_pos, y_pos
+            """
             # eq trajectory : y = -g/2 (x-x_target)*(x-x_pos) + ((y_target-y_pos)/(x_target - x_pos))*(x-x_pos) + y_pos
             X = np.linspace(x_pos, x_target, 50)  # 20 points
             if x_target == x_pos:
@@ -177,6 +219,10 @@ class Player:
             )
 
         def launch_trajectory(self, x_target, y_target, x_pos, y_pos):
+            """
+            trajectoire verticale pour les strike arrivant à x_target, y_target
+            """
+
             # trajectoire verticale
             X = np.linspace(x_target, x_target, 50)  # 20 points
             Y = np.linspace(y_target + 108, y_target, 50)

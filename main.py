@@ -19,6 +19,10 @@ import shapes
 
 # liste les sauvegardes disponibles
 def list_saves():
+    """
+    permet de retourner la liste de parties enregistréest trouvées dans la DB
+    """
+
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
@@ -36,6 +40,10 @@ def list_saves():
 
 # à ne lancer qu'une fois
 def init_db():
+    """
+    initialise la DB : game.db, lorsqu'elle n'existe pas
+    """
+
     conn = sqlite3.connect("game.db")
     cur = conn.cursor()
 
@@ -53,6 +61,9 @@ def init_db():
 
 # vérifie si la DB exite, si elle existe pas, on lance init_db()
 def ensure_db_exists(db_path="game.db"):
+    """
+    vérifie que la DB : game.db existe, si c'est pas le cas ça la crée
+    """
     if not os.path.exists(db_path):
         print("DB not found → initializing...")
         init_db()
@@ -66,6 +77,10 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "game.db")
 
 # save
 def save_game(grid, players):
+    """
+    fonction écrivant dans la DB l'état de la partie : joueurs et GRID afin de pouvoir recharger ces informations et reprendre la partie si besoin
+    """
+
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
@@ -86,6 +101,10 @@ def save_game(grid, players):
 
 
 def load_game(save_id):
+    """
+    fonction permettant de charger une partie sauvegardée dans la DB
+    """
+
     conn = sqlite3.connect("game.db")
     cur = conn.cursor()
 
@@ -154,6 +173,8 @@ valid_ids = list_saves()
 
 print("Valid save ids:", valid_ids)
 
+# demande un save_id, si il est pas correcte, on commence une nouvelle partie
+
 save_id = int(input("Enter save id: "))
 if save_id not in valid_ids:
     print("Invalid save id.")
@@ -218,9 +239,11 @@ if backend == "PYGAME":
 
     while running:
         # gestion des inputs
+
         event = pygame.event.poll()
 
         # si la fenetre change de taille
+
         info = pygame.display.Info()
         if (
             (screen_width != info.current_w)
@@ -234,18 +257,18 @@ if backend == "PYGAME":
             screen.fill((0, 255, 255))
             refresh_UI = True
 
-        # quitter le jeu
+        # quitter le jeu ( action de quitter : super + q sur mon pc en linux )
         if event.type == pygame.QUIT:
             running = False
 
-        # enregistre et quitte le jeu
+        # enregistre et quitte le jeu ( key : q )
         if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_q):
             print("Sauvegarde en cours...")
             save_game(GRID, [player.to_dict() for player in players])
             running = False
             print("Sauvegarde terminée.")
 
-        # ajout de worm
+        # ajout de worm ( clique gauche )
         if (
             (event.type == pygame.MOUSEBUTTONDOWN)
             and (event.button == 1)
@@ -267,7 +290,7 @@ if backend == "PYGAME":
                 else:
                     print("CANNOT PUT WORM HERE")
 
-        # change de worm selectionne pour le missile
+        # change de worm selectionne pour le missile ( key : tab )
         if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_TAB):
             if players[player_id].wormz != []:
                 id_worm_launch = (id_worm_launch + 1) % len(players[player_id].wormz)
@@ -283,13 +306,15 @@ if backend == "PYGAME":
                     cell_size,
                 )
                 refresh_UI = True
+
+        # change de type d'arme pour le clique droit ( key : left shift )
         if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_LSHIFT):
             weapon_type = (weapon_type + 1) % 2
             print("WEAPON_TYPE : ", weapon_type)
             screen.fill((0, 255, 255))
             refresh_UI = True
 
-        # finir un tour (changer de joueur)
+        # finir un tour (changer de joueur) ( key : entrer )
         if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_RETURN):
             id_worm_launch = 0
             player_id = (player_id + 1) % 2
@@ -299,7 +324,7 @@ if backend == "PYGAME":
             screen.fill((0, 255, 255))
             refresh_UI = True
 
-        # acheter missile
+        # acheter missile ( key : m )
         if (
             (event.type == pygame.KEYDOWN)
             and (event.key == pygame.K_m)
@@ -314,7 +339,7 @@ if backend == "PYGAME":
             screen.fill((0, 255, 255))
             refresh_UI = True
 
-        # acheter strike , coute 2 actions
+        # acheter strike , coute 2 actions (key : s)
         if (
             (event.type == pygame.KEYDOWN)
             and (event.key == pygame.K_s)
@@ -329,7 +354,7 @@ if backend == "PYGAME":
             screen.fill((0, 255, 255))
             refresh_UI = True
 
-        # lancer un missile / strike
+        # lancer un missile / strike (clique droit)
         if (
             (event.type == pygame.MOUSEBUTTONDOWN)
             and (event.button == 3)
@@ -421,6 +446,8 @@ if backend == "PYGAME":
 
         # step
         GRID, moved = physics.step(GRID, player1, player2)
+
+        # met à jour l'affichage si la grille / les wormz ont bougés
         if moved:
             refresh_UI = True
         while moved:
@@ -436,6 +463,7 @@ if backend == "PYGAME":
             pygame.display.flip()
             clock.tick(60)
 
+        # affiche au dessus les élément d'UI après avoir rafraichi la grid et les wormz
         if refresh_UI:
             dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
             dp.draw_shop(screen, player1, player2, font)
@@ -445,7 +473,6 @@ if backend == "PYGAME":
             refresh_UI = False
             pygame.display.flip()
 
-        # dp.draw_UI(screen, player1, font)
         clock.tick(60)
 
     pygame.quit()
