@@ -1,5 +1,6 @@
 #!/bin/python3
 # import matplotlib.pyplot as plt
+import argparse
 import io
 import json
 import os
@@ -10,6 +11,7 @@ import numpy as np
 import pygame
 
 import assets
+import DSL
 import display as dp
 import physics
 import shapes
@@ -127,10 +129,19 @@ def load_game(save_id):
 # backend = "MATPLOTLIB"
 backend = "PYGAME"
 
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-c",
+    "--config",
+    help="fichier de configuration custom pour une nouvelle partie",
+)
+args = parser.parse_args()
+
 
 # taille de la grille
 Nx, Ny = 192, 108
 cell_size = 10
+game_config = DSL.load_config(args.config, Ny) if args.config else DSL.default_config(Ny)
 
 # types :
 ## 0 - AIR
@@ -148,6 +159,8 @@ bridge4 = mpimg.imread("map/bridge4.png")
 dirt_pixel = ground[99, 0]
 grass_pixel = ground[86, 0]
 bridge_pixel = bridge1[35, 33]
+
+# lit les images permettant de générer la map avec ses objets
 
 for y in range(Ny):
     for x in range(Nx):
@@ -175,29 +188,27 @@ print("Valid save ids:", valid_ids)
 
 # demande un save_id, si il est pas correcte, on commence une nouvelle partie
 
-save_id = int(input("Enter save id: "))
-if save_id not in valid_ids:
-    print("Invalid save id.")
-    print("Starting a new game !")
-    player1 = assets.Player()
-    player2 = assets.Player()
-    worm1 = player1.Worm(25, Ny - 59 - 1, worm_id=0)
-    worm2 = player2.Worm(163, Ny - 41 - 1, worm_id=0)
-    player1.wormz.append(worm1)
-    player2.wormz.append(worm2)
-    for i in range(3):
-        weapon1 = player1.missile()
-        weapon2 = player2.missile()
-        player1.weapons[0].append(weapon1)
-        player2.weapons[0].append(weapon2)
+if args.config:
+    print(f"Starting a new custom game from {args.config} !")
+    player1, player2 = DSL.create_players(game_config)
 else:
-    GRID, player1, player2 = load_game(save_id)
+    save_id = int(input("Enter save id: "))
+    if save_id not in valid_ids:
+        print("Invalid save id.")
+        print("Starting a new game !")
+        player1, player2 = DSL.create_players(game_config)
+    else:
+        GRID, player1, player2 = load_game(save_id)
 
 
 players = [player1, player2]
 player_id = 0
 weapon_type = 0
+prices = game_config["prices"]
+kill_reward = game_config["bonuses"]["kill_reward"]
 
+##### CODE LEGACY DE TEST, plus compatible avec le projet #####
+#
 # if backend == "MATPLOTLIB":
 #    plt.ion()
 #    while not np.array_equal(GRID, physics.step(GRID)):
@@ -226,7 +237,7 @@ if backend == "PYGAME":
 
     screen.fill((0, 255, 255))
     dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
-    dp.draw_shop(screen, player1, player2, font)
+    dp.draw_shop(screen, player1, player2, font, prices)
 
     refresh_UI = True
 
@@ -278,8 +289,8 @@ if backend == "PYGAME":
                 and (event.button == 1)
                 and (nb_actions < 3)
             ):
-                if players[player_id].money >= 200:
-                    players[player_id].money -= 200
+                if players[player_id].money >= prices["worm"]:
+                    players[player_id].money -= prices["worm"]
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     grid_x = int(mouse_x // cell_size)
                     grid_y = int(Ny - 1 - (mouse_y // cell_size))
@@ -334,13 +345,15 @@ if backend == "PYGAME":
                 (event.type == pygame.KEYDOWN)
                 and (event.key == pygame.K_m)
                 and (nb_actions < 3)
-                and (players[player_id].money >= 150)
+                and (players[player_id].money >= prices["missile"])
             ):
                 nb_actions += 1
                 print("NB_ACTIONS : ", nb_actions, " / 3")
-                weapon = players[player_id].missile()
+                weapon = DSL.make_weapon(
+                    players[player_id], "missile", game_config["weapon_stats"]["missile"]
+                )
                 players[player_id].weapons[0].append(weapon)
-                players[player_id].money -= 150
+                players[player_id].money -= prices["missile"]
                 screen.fill((0, 255, 255))
                 refresh_UI = True
     
@@ -349,13 +362,15 @@ if backend == "PYGAME":
                 (event.type == pygame.KEYDOWN)
                 and (event.key == pygame.K_s)
                 and (nb_actions < 2)
-                and (players[player_id].money >= 300)
+                and (players[player_id].money >= prices["strike"])
             ):
                 nb_actions += 2
                 print("NB_ACTIONS : ", nb_actions, " / 3")
-                weapon = players[player_id].strike()
+                weapon = DSL.make_weapon(
+                    players[player_id], "strike", game_config["weapon_stats"]["strike"]
+                )
                 players[player_id].weapons[1].append(weapon)
-                players[player_id].money -= 300
+                players[player_id].money -= prices["strike"]
                 screen.fill((0, 255, 255))
                 refresh_UI = True
     
@@ -406,7 +421,7 @@ if backend == "PYGAME":
                                             worm.take_damage(weapon.damage)
                                             if worm.health <= 0:
                                                 player.kill_worm(worm.worm_id)
-                                                players[(k + 1) % 2].money += 150
+                                                players[(k + 1) % 2].money += kill_reward
                                         elif (
                                             (worm.x_pos - int(trajectory[0][i])) ** 2
                                             + (worm.y_pos - int(trajectory[1][i])) ** 2
@@ -414,7 +429,7 @@ if backend == "PYGAME":
                                             worm.take_damage(weapon.damage / 2)
                                             if worm.health <= 0:
                                                 player.kill_worm(worm.worm_id)
-                                                players[(k + 1) % 2].money += 150
+                                                players[(k + 1) % 2].money += kill_reward
                                         print("health : ", worm.health)
                                 GRID = shapes.transform(
                                     GRID,
@@ -482,7 +497,7 @@ if backend == "PYGAME":
             # affiche au dessus les élément d'UI après avoir rafraichi la grid et les wormz
             if refresh_UI:
                 dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
-                dp.draw_shop(screen, player1, player2, font)
+                dp.draw_shop(screen, player1, player2, font, prices)
                 dp.show_UI(
                     screen, player1, player2, font, player_id, weapon_type, nb_actions
                 )

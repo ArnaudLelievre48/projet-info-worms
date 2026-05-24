@@ -116,18 +116,23 @@ def display_weapon(screen, traj_x, traj_y, cell_size=10):
     screen.blit(weapon_cache[tex], (traj_x * cell_size, (Ny - traj_y - 1) * cell_size))
 
 
-def draw_shop(screen, player1, player2, font):
+def draw_shop(screen, player1, player2, font, prices=None):
     """
     permet d'afficher le prix des items pour les 2 joueurs, une feature envisagée aurait été d'appliquer des bonus et malus de prix, mais on a pas eu le temps...
     """
+    if prices is None:
+        prices = {"worm": 200, "missile": 150, "strike": 300}
+
     width = screen.get_width()
 
     pygame.draw.rect(screen, (100, 80, 80), pygame.Rect(width - 650, 10, 200, 40))
     pygame.draw.rect(screen, (100, 80, 80), pygame.Rect(width - 450, 10, 200, 40))
 
-    txt1 = font.render(f"Weapon : {100} | {300}", True, (255, 255, 255))
+    txt1 = font.render(
+        f"Weapon : {prices['missile']} | {prices['strike']}", True, (255, 255, 255)
+    )
 
-    txt2 = font.render(f"Worm : {200}", True, (255, 255, 255))
+    txt2 = font.render(f"Worm : {prices['worm']}", True, (255, 255, 255))
 
     screen.blit(txt1, (100, 20))
     screen.blit(txt2, (300, 20))
