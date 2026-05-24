@@ -223,7 +223,6 @@ if backend == "PYGAME":
     clock = pygame.time.Clock()
 
     running = True
-    clock.tick(2000)
 
     screen.fill((0, 255, 255))
     dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
@@ -473,7 +472,7 @@ if backend == "PYGAME":
                 screen.fill((0, 255, 255))
                 dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
                 pygame.display.flip()
-                clock.tick(60)
+                clock.tick(120)
                 check_step = True
 
             GRID, moved = physics.step_vectorized(GRID, player1, player2, direction=-1)
