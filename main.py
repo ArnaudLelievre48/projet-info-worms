@@ -237,7 +237,8 @@ if backend == "PYGAME":
 
     nb_actions = 0
     check_step = False
-    GRID, moved = physics.step(GRID, player1, player2)
+    #GRID, moved = physics.step(GRID, player1, player2)
+    GRID, moved = physics.step_vectorized(GRID, player1, player2)
 
     while running:
         # gestion des inputs
@@ -439,7 +440,7 @@ if backend == "PYGAME":
                         dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
                         dp.display_weapon(screen, trajectory[0][i], trajectory[1][i])
                         pygame.display.flip()
-                        clock.tick(30)
+                        clock.tick(60)
                         i += 1
                 else:
                     print("CAN'T SHOOT WEAPON")
@@ -450,7 +451,8 @@ if backend == "PYGAME":
     
             # step
             if check_step:
-                GRID, moved = physics.step(GRID, player1, player2)
+                #GRID, moved = physics.step(GRID, player1, player2)
+                GRID, moved = physics.step_vectorized(GRID, player1, player2)
                 print("checking step funciton")
 
             if (not moved):
@@ -464,14 +466,19 @@ if backend == "PYGAME":
                     if event.type == pygame.QUIT:
                         running = False
     
-                GRID, moved = physics.step(GRID, player1, player2)
+                #GRID, moved = physics.step(GRID, player1, player2)
+                GRID, moved = physics.step_vectorized(GRID, player1, player2)
                 GRID = physics.apply_object_cuts(GRID)
     
                 screen.fill((0, 255, 255))
                 dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
                 pygame.display.flip()
-                clock.tick(30)
+                clock.tick(60)
                 check_step = True
+
+            GRID, moved = physics.step_vectorized(GRID, player1, player2, direction=-1)
+            GRID, moved = physics.step_vectorized(GRID, player1, player2, direction=1)
+            check_step = True
     
             # affiche au dessus les élément d'UI après avoir rafraichi la grid et les wormz
             if refresh_UI:

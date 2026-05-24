@@ -132,6 +132,108 @@ def step(grid, player1, player2):
 
 
 
+def step_vectorized(grid, player1, player2, direction=None):
+    """
+    la fonction step, mais de facon completement vectorielle en utilisant une direction aléatoire pour tous les blocs au lieu de déplacer chaque bloc individuels de manière aléatoire
+    """
+
+    moved = False
+
+    # =========================================================
+    # 1. WORMS (unchanged - must stay sequential)
+    # =========================================================
+    for player, enemy in [(player1, player2), (player2, player1)]:
+        for worm in player.wormz:
+
+            if worm.is_supposed_to_fall(grid):
+                worm.gravity(grid)
+                moved = True
+
+            elif grid[worm.y_pos, worm.x_pos, 0] != AIR:
+                worm.take_damage(0.75)
+                worm.y_pos += 3
+                moved = True
+
+                if worm.health <= 0:
+                    player.kill_worm(worm.worm_id)
+                    enemy.money += 150
+
+    # =========================================================
+    # 2. SAND (SAFE VECTOR VERSION)
+    # =========================================================
+    h, w = grid.shape[:2]
+    new = grid.copy()
+
+    material = grid[:, :, 0]
+    sand = (material == SAND)
+    air = (material == AIR)
+
+    if direction is None:
+        direction = random.choice([-1, 1])
+
+    # =========================================================
+    # 2.1 DOWN MOVEMENT (SAFE)
+    # =========================================================
+    can_fall = sand.copy()
+    can_fall[1:, :] &= air[:-1, :]
+
+    # IMPORTANT: write using full indexing (no chained indexing)
+    fall_y, fall_x = np.where(can_fall)
+
+    for y, x in zip(fall_y, fall_x):
+        new[y, x, 0] = AIR
+        new[y - 1, x, 0] = SAND
+        new[y - 1, x, 1] = grid[y, x, 1]
+        new[y - 1, x, 2] = grid[y, x, 2]
+
+    moved |= can_fall.any()
+
+    # update reference grid for next phase
+    grid = new.copy()
+    material = grid[:, :, 0]
+    sand = (material == SAND)
+    air = (material == AIR)
+
+    # =========================================================
+    # 2.2 DIAGONAL MOVEMENT (SAFE + GLOBAL DIRECTION)
+    # =========================================================
+    new2 = grid.copy()
+
+    can_move = sand.copy()
+
+    if direction == -1:
+        # left
+        can_move[1:, 1:] &= air[:-1, :-1]
+
+        ys, xs = np.where(can_move)
+
+        for y, x in zip(ys, xs):
+            new2[y, x, 0] = AIR
+            new2[y - 1, x - 1, 0] = SAND
+            new2[y - 1, x - 1, 1] = grid[y, x, 1]
+            new2[y - 1, x - 1, 2] = grid[y, x, 2]
+
+    else:
+        # right
+        can_move[1:, :-1] &= air[:-1, 1:]
+
+        ys, xs = np.where(can_move)
+
+        for y, x in zip(ys, xs):
+            new2[y, x, 0] = AIR
+            new2[y - 1, x + 1, 0] = SAND
+            new2[y - 1, x + 1, 1] = grid[y, x, 1]
+            new2[y - 1, x + 1, 2] = grid[y, x, 2]
+
+    moved |= can_move.any()
+
+    # =========================================================
+    # 3. FINAL GRID
+    # =========================================================
+    grid = new2
+
+    return grid, moved
+
 
 def apply_object_cuts(grid):
     # Gère la rupture des ponts ou objets : transforme le solide en sable si la structure est coupée
