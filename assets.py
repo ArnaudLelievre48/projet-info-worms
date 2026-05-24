@@ -47,7 +47,7 @@ class Player:
                     "x": w.x_pos,
                     "y": w.y_pos,
                     "health": w.health,
-                    "range": w.range,
+                    "worm_range": w.worm_range,
                     "weight": w.weight,
                 }
                 for w in self.wormz
@@ -89,7 +89,7 @@ class Player:
                 x_pos=w["x"],
                 y_pos=w["y"],
                 health=w["health"],
-                range=w["range"],
+                worm_range=w["worm_range"],
                 weight=w["weight"],
                 worm_id=w["id"],
             )
@@ -120,13 +120,13 @@ class Player:
         return player
 
     class Worm:
-        def __init__(self, x_pos, y_pos, health=3, range=100, weight=5, worm_id=None):
+        def __init__(self, x_pos, y_pos, health=3, worm_range=120, weight=5, worm_id=None):
             """
             initialise un worm avec 3 de vie, une position x et y, et un worm_id qui est par défaut None, les autres sont des features qui n'ont pas encore été pu être utilisées
             """
 
             self.health = health  # nombre de degats avant de mourrir
-            self.range = range  # distance de missiles à viser
+            self.worm_range = worm_range  # distance de missiles à viser
             self.weight = weight  # nombre de block min en dessous pour pas casser
             self.x_pos, self.y_pos = x_pos, y_pos
             self.worm_id = worm_id

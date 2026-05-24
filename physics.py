@@ -208,6 +208,9 @@ def step_vectorized(grid, player1, player2, direction=None):
         ys, xs = np.where(can_move)
 
         for y, x in zip(ys, xs):
+            if (x-1 < 0) or (y-1 < 0):
+                new2[y, x, 0] = SOLID
+                continue
             new2[y, x, 0] = AIR
             new2[y - 1, x - 1, 0] = SAND
             new2[y - 1, x - 1, 1] = grid[y, x, 1]
@@ -220,6 +223,9 @@ def step_vectorized(grid, player1, player2, direction=None):
         ys, xs = np.where(can_move)
 
         for y, x in zip(ys, xs):
+            if (x+1 > w-1) or (y-1 < 0):
+                new2[y, x, 0] = SOLID
+                continue
             new2[y, x, 0] = AIR
             new2[y - 1, x + 1, 0] = SAND
             new2[y - 1, x + 1, 1] = grid[y, x, 1]

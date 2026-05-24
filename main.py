@@ -370,12 +370,12 @@ if backend == "PYGAME":
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 grid_x = int(mouse_x // cell_size)
                 grid_y = int(Ny - 1 - (mouse_y // cell_size))
+                x_0_launch = players[player_id].wormz[id_worm_launch].x_pos
+                y_0_launch = players[player_id].wormz[id_worm_launch].y_pos
                 if (players[player_id].weapons[weapon_type] != []) and (
-                    players[player_id].wormz != []
+                    players[player_id].wormz != [] and ( (weapon_type == 1) or ( ( (x_0_launch - grid_x)**2 + (y_0_launch - grid_y)**2) <= (players[player_id].wormz[-1].worm_range**2) ) ) 
                 ):
                     nb_actions += 1
-                    x_0_launch = players[player_id].wormz[id_worm_launch].x_pos
-                    y_0_launch = players[player_id].wormz[id_worm_launch].y_pos
                     weapon = players[player_id].weapons[weapon_type].pop()
                     trajectory = weapon.launch_trajectory(
                         grid_x, grid_y, x_0_launch, y_0_launch
