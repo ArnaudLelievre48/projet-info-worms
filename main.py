@@ -365,7 +365,6 @@ if backend == "PYGAME":
                 and (event.button == 3)
                 and (nb_actions < 3)
             ):
-                nb_actions += 1
                 print("NB_ACTIONS : ", nb_actions, " / 3")
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 grid_x = int(mouse_x // cell_size)
@@ -373,6 +372,7 @@ if backend == "PYGAME":
                 if (players[player_id].weapons[weapon_type] != []) and (
                     players[player_id].wormz != []
                 ):
+                    nb_actions += 1
                     x_0_launch = players[player_id].wormz[id_worm_launch].x_pos
                     y_0_launch = players[player_id].wormz[id_worm_launch].y_pos
                     weapon = players[player_id].weapons[weapon_type].pop()
