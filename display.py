@@ -24,12 +24,11 @@ def show_grid_matplotlib(grid):
 
 
 # pygame
-def draw_cell(screen: pygame.Surface, x, y):
+def draw_cell(screen: pygame.Surface, x, y, cell_size=10):
     """
     fonction permettant d'afficher une cellule de taille 10x10 : un bloc de la GRID
     """
 
-    cell_size = 10
     rect = pygame.Rect(x * cell_size, y * cell_size, cell_size - 1, cell_size - 1)
     pygame.draw.rect(screen, (255, 0, 0), rect)
 
@@ -72,10 +71,10 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=10):
             continue
 
         img = pygame.image.load(path).convert_alpha()
-        img = pygame.transform.scale(img, (cell_size, cell_size))
+        img = pygame.transform.scale(img, (2*cell_size, 2*cell_size))
         cache[tex] = img
         screen.blit(
-            cache[tex], (worm.x_pos * cell_size, (Ny - worm.y_pos - 1) * cell_size)
+            cache[tex], (worm.x_pos * cell_size - cell_size/2, (Ny - worm.y_pos - 1) * cell_size - cell_size)
         )
 
     for worm in wormz2:
@@ -85,10 +84,10 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=10):
             continue
 
         img = pygame.image.load(path).convert_alpha()
-        img = pygame.transform.scale(img, (cell_size, cell_size))
+        img = pygame.transform.scale(img, (2*cell_size, 2*cell_size))
         cache[tex] = img
         screen.blit(
-            cache[tex], (worm.x_pos * cell_size, (Ny - worm.y_pos - 1) * cell_size)
+            cache[tex], (worm.x_pos * cell_size - cell_size/2, (Ny - worm.y_pos - 1) * cell_size - cell_size)
         )
 
 
