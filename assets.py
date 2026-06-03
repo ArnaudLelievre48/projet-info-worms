@@ -6,14 +6,14 @@ import numpy as np
 class Player:
     def __init__(self, wormz=None, weapons=None, money=1000):
         """
-        initialise la classe Player avec 1000 d'argent par défaut, et des listes / liste de liste vides pour wormz et weapons -> le remplissage de worm et weappons est géré dans main.py
+        Initialise un joueur avec son argent, ses wormz et son inventaire d'armes.
         """
 
         if wormz is None:
             wormz = []
 
         if weapons is None:
-            weapons = [[], []]  # 0 for missiles, 1 for strikes
+            weapons = [[], []]  # 0 pour les missiles, 1 pour les strikes.
 
         self.wormz = wormz
         self.weapons = weapons
@@ -21,7 +21,7 @@ class Player:
 
     def kill_worm(self, worm_id):
         """
-        parcours la liste de worm du joueur, et supprime le worm d'id : worm_id
+        Parcourt les wormz du joueur et supprime celui qui possède l'identifiant donné.
         """
 
         for i in range(len(self.wormz)):
@@ -36,7 +36,7 @@ class Player:
 
     def to_dict(self):
         """
-        encode dans un disctionnaire les informations du joueur afin d'écrire ces informations dans la DB
+        Encode l'état du joueur dans un dictionnaire sérialisable en base de données.
         """
 
         return {
@@ -77,7 +77,7 @@ class Player:
     @staticmethod
     def from_dict(data):
         """
-        permet de créer les players en fonctions des données des joueurs récupérés depuis la DB (précédement encodés par : to_dict)
+        Reconstruit un joueur à partir des données précédemment produites par `to_dict`.
         """
 
         player = Player()
@@ -98,13 +98,13 @@ class Player:
 
         player.weapons = [
             [
-                Player.missile()  # on reconstruit puis on écrase les attributs
+                Player.missile()  # On reconstruit l'objet, puis on écrase ses attributs.
                 for m in data["weapons"][0]
             ],
             [Player.strike() for s in data["weapons"][1]],
         ]
 
-        # remise des attributs weapons (important)
+        # Restaure les attributs des armes sauvegardées.
         for obj, saved in zip(player.weapons[0], data["weapons"][0]):
             obj.radius_range = saved["radius_range"]
             obj.radius_explosion = saved["radius_explosion"]
@@ -122,25 +122,25 @@ class Player:
     class Worm:
         def __init__(self, x_pos, y_pos, health=3, worm_range=120, weight=5, worm_id=None):
             """
-            initialise un worm avec 3 de vie, une position x et y, et un worm_id qui est par défaut None, les autres sont des features qui n'ont pas encore été pu être utilisées
+            Initialise un worm avec sa position, ses points de vie et ses paramètres de gameplay.
             """
 
-            self.health = health  # nombre de degats avant de mourrir
-            self.worm_range = worm_range  # distance de missiles à viser
-            self.weight = weight  # nombre de block min en dessous pour pas casser
+            self.health = health  # Points de vie restants.
+            self.worm_range = worm_range  # Distance maximale de visée des missiles.
+            self.weight = weight  # Nombre minimal de blocs de soutien avant rupture.
             self.x_pos, self.y_pos = x_pos, y_pos
             self.worm_id = worm_id
 
         def take_damage(self, damage):
             """
-            met à jour la vie du worm en lui enlevant à sa vie : damage
+            Retire les dégâts reçus aux points de vie du worm.
             """
 
             self.health -= damage
 
         def is_supposed_to_fall(self, GRID):
             """
-            vérifie si le worm est censé tomber, ne le fait pas bouger pour autant
+            Vérifie si le worm doit tomber, sans modifier sa position.
             """
 
             return (GRID[self.y_pos - 1][self.x_pos][0] == 0) or (
@@ -153,20 +153,20 @@ class Player:
 
         def gravity(self, GRID):
             """
-            applique la gravité en changeant la position du worm de la meme manière que les grains de sable
+            Applique la gravité au worm comme pour les grains de sable.
             """
 
-            if GRID[self.y_pos - 1][self.x_pos][0] == 0:  # si AIR en dessous
+            if GRID[self.y_pos - 1][self.x_pos][0] == 0:  # Air sous le worm.
                 self.y_pos -= 1
             elif (0 < self.x_pos) and (self.x_pos < 192):
                 if (
                     GRID[self.y_pos - 1][self.x_pos + 1][0] == 0
-                ):  # si AIR en diagonale gauche
+                ):  # Air en diagonale droite.
                     self.y_pos -= 1
                     self.x_pos += 1
                 elif (
                     GRID[self.y_pos - 1][self.x_pos - 1][0] == 0
-                ):  # si AIR en diagonale droite
+                ):  # Air en diagonale gauche.
                     self.y_pos -= 1
                     self.x_pos -= 1
 
@@ -175,7 +175,7 @@ class Player:
             self, radius_range=100, radius_explosion=5, radius_break=8, damage=3
         ):
             """
-            initialise un weapon avec un range, un radius_explosion; un radius_break et un quantité de damage
+            Initialise une arme avec sa portée, ses rayons d'effet et ses dégâts.
             """
 
             self.radius_range = radius_range
@@ -186,7 +186,7 @@ class Player:
         @abstractmethod
         def launch_trajectory(self, x_target, y_target, x_pos, y_pos):
             """
-            méthode abstraite qui définie la trajectoire que doit effectuer le weapon (missile ou strike)
+            Définit la trajectoire que doit suivre l'arme.
             """
             pass
 
@@ -198,10 +198,11 @@ class Player:
 
         def launch_trajectory(self, x_target, y_target, x_pos, y_pos):
             """
-            trajectoire quadratique entre x_target, y_target et x_pos, y_pos
+            Calcule une trajectoire quadratique entre la position de départ et la cible.
             """
-            # eq trajectory : y = -g/2 (x-x_target)*(x-x_pos) + ((y_target-y_pos)/(x_target - x_pos))*(x-x_pos) + y_pos
-            X = np.linspace(x_pos, x_target, 50)  # 20 points
+            # Équation : y = -g/2 * (x - x_target) * (x - x_pos)
+            # + ((y_target - y_pos) / (x_target - x_pos)) * (x - x_pos) + y_pos.
+            X = np.linspace(x_pos, x_target, 50)  # 50 points.
             if x_target == x_pos:
                 Y = np.linspace(y_pos, y_target, 50)
             else:
@@ -220,10 +221,10 @@ class Player:
 
         def launch_trajectory(self, x_target, y_target, x_pos, y_pos):
             """
-            trajectoire verticale pour les strike arrivant à x_target, y_target
+            Calcule la trajectoire verticale d'un strike vers la cible.
             """
 
-            # trajectoire verticale
-            X = np.linspace(x_target, x_target, 50)  # 20 points
+            # Trajectoire verticale.
+            X = np.linspace(x_target, x_target, 50)  # 50 points.
             Y = np.linspace(y_target + 108, y_target, 50)
             return (X, Y)

@@ -1,22 +1,22 @@
-# implémente la physique
+# Implémente la physique du jeu.
 
 
 from collections import defaultdict
 import numpy as np
 import random
 
-# Définition des types de matériaux pour la gestion des collisions
+# Types de matériaux utilisés pour les collisions.
 AIR = 0
 SOLID = 1
 SAND = 2
 
 
 
-#def step(grid):
+# def step(grid):
 #    h, w = grid.shape[:2]
 #    new = grid.copy()
 #
-#    # bottom → top
+#    # Parcours de bas en haut.
 #    for y in range(1, h):
 #        for x in range(w):
 #
@@ -24,7 +24,7 @@ SAND = 2
 #
 #            if material == SAND:
 #
-#                # --- try DOWN ---
+#                # Essaie d'abord de tomber verticalement.
 #                below_material, _, _ = grid[y - 1, x]
 #
 #                if below_material == AIR:
@@ -32,7 +32,7 @@ SAND = 2
 #                    new[y - 1, x] = (SAND, obj_id, texture)
 #                    continue
 #
-#                # --- try DIAGONALS ---
+#                # Essaie ensuite de glisser en diagonale.
 #                directions = [-1, 1]
 #                random.shuffle(directions)
 #
@@ -49,26 +49,26 @@ SAND = 2
 #                            moved = True
 #                            break
 #
-#                # if not moved → stays in place
+#                # Si aucun mouvement n'est possible, le grain reste en place.
 #
 #    return new
 
 
 def step(grid, player1, player2):
     """
-    met à jour la position des wormz et met à jour la grille, retourne aussi si l'affichage a besoin d'être rafraichi avec : moved
+    Met à jour les wormz et le sable, puis indique si l'affichage doit être rafraîchi.
     """
 
-    # Initialisation de la détection de mouvement pour la boucle de rendu
-    moved = False  # ← AJOUT
+    # Détection de mouvement utilisée par la boucle de rendu.
+    moved = False
 
-    # Gestion de la physique et des dégâts pour les unités du Joueur 1
+    # Physique et dégâts des unités du joueur 1.
     for worm in player1.wormz:
         if worm.is_supposed_to_fall(grid):
             moved = True
             worm.gravity(grid)
         elif grid[worm.y_pos][worm.x_pos][0] != 0:
-            # Dégâts d'étouffement si le Worm est coincé dans un matériau solide
+            # Dégâts d'étouffement si le worm est coincé dans un matériau solide.
             worm.take_damage(0.75)
             worm.y_pos += 3
             if worm.health <= 0:
@@ -76,7 +76,7 @@ def step(grid, player1, player2):
                 player2.money += 150
 
 
-    # Gestion de la physique et des dégâts pour les unités du Joueur 2
+    # Physique et dégâts des unités du joueur 2.
     for worm in player2.wormz:
         if worm.is_supposed_to_fall(grid):
             moved = True
@@ -96,7 +96,7 @@ def step(grid, player1, player2):
     new = grid.copy()
 
 
-    # Parcours de la grille pour simuler la physique des particules (sable)
+    # Parcourt la grille pour simuler la physique des particules de sable.
     for y in range(1, h):
         for x in range(w):
 
@@ -106,14 +106,14 @@ def step(grid, player1, player2):
 
                 below_material, _, _ = grid[y - 1, x]
 
-                # Chute verticale si la cellule du dessous est vide
+                # Chute verticale si la cellule du dessous est vide.
                 if below_material == AIR:
                     new[y, x] = (AIR, -1, texture)
                     new[y - 1, x] = (SAND, obj_id, texture)
-                    moved = True  # ← AJOUT
+                    moved = True
                     continue
 
-                # Glissement diagonal aléatoire si la chute verticale est bloquée
+                # Glissement diagonal aléatoire si la chute verticale est bloquée.
                 directions = [-1, 1]
                 random.shuffle(directions)
 
@@ -125,22 +125,25 @@ def step(grid, player1, player2):
                         if diag_material == AIR:
                             new[y, x] = (AIR, -1, texture)
                             new[y - 1, nx] = (SAND, obj_id, texture)
-                            moved = True  # ← AJOUT
+                            moved = True
                             break
 
-    return new, moved  # ← SEUL changement de retour
+    return new, moved
 
 
 
 def step_vectorized(grid, player1, player2, direction=None):
     """
-    la fonction step, mais de facon completement vectorielle en utilisant une direction aléatoire pour tous les blocs au lieu de déplacer chaque bloc individuels de manière aléatoire
+    Version vectorisée de `step`.
+
+    Une direction diagonale globale est choisie pour tous les grains de sable,
+    au lieu d'un choix aléatoire indépendant pour chaque grain.
     """
 
     moved = False
 
     # =========================================================
-    # 1. WORMS (unchanged - must stay sequential)
+    # 1. WORMS : traitement séquentiel nécessaire.
     # =========================================================
     for player, enemy in [(player1, player2), (player2, player1)]:
         for worm in player.wormz:
@@ -159,7 +162,7 @@ def step_vectorized(grid, player1, player2, direction=None):
                     enemy.money += 150
 
     # =========================================================
-    # 2. SAND (SAFE VECTOR VERSION)
+    # 2. SABLE : version vectorisée.
     # =========================================================
     h, w = grid.shape[:2]
     new = grid.copy()
@@ -172,12 +175,12 @@ def step_vectorized(grid, player1, player2, direction=None):
         direction = random.choice([-1, 1])
 
     # =========================================================
-    # 2.1 DOWN MOVEMENT (SAFE)
+    # 2.1 Chute verticale.
     # =========================================================
     can_fall = sand.copy()
     can_fall[1:, :] &= air[:-1, :]
 
-    # IMPORTANT: write using full indexing (no chained indexing)
+    # Utilise l'indexation complète pour éviter les effets de bord de l'indexation chaînée.
     fall_y, fall_x = np.where(can_fall)
 
     for y, x in zip(fall_y, fall_x):
@@ -188,21 +191,21 @@ def step_vectorized(grid, player1, player2, direction=None):
 
     moved |= can_fall.any()
 
-    # update reference grid for next phase
+    # Met à jour la grille de référence pour la phase suivante.
     grid = new.copy()
     material = grid[:, :, 0]
     sand = (material == SAND)
     air = (material == AIR)
 
     # =========================================================
-    # 2.2 DIAGONAL MOVEMENT (SAFE + GLOBAL DIRECTION)
+    # 2.2 Glissement diagonal avec direction globale.
     # =========================================================
     new2 = grid.copy()
 
     can_move = sand.copy()
 
     if direction == -1:
-        # left
+        # Glissement à gauche.
         can_move[1:, 1:] &= air[:-1, :-1]
 
         ys, xs = np.where(can_move)
@@ -217,7 +220,7 @@ def step_vectorized(grid, player1, player2, direction=None):
             new2[y - 1, x - 1, 2] = grid[y, x, 2]
 
     else:
-        # right
+        # Glissement à droite.
         can_move[1:, :-1] &= air[:-1, 1:]
 
         ys, xs = np.where(can_move)
@@ -234,7 +237,7 @@ def step_vectorized(grid, player1, player2, direction=None):
     moved |= can_move.any()
 
     # =========================================================
-    # 3. FINAL GRID
+    # 3. Grille finale.
     # =========================================================
     grid = new2
 
@@ -242,12 +245,12 @@ def step_vectorized(grid, player1, player2, direction=None):
 
 
 def apply_object_cuts(grid):
-    # Gère la rupture des ponts ou objets : transforme le solide en sable si la structure est coupée
+    # Transforme en sable les parties d'un objet situées au-dessus d'une coupure.
     h, w = grid.shape[:2]
 
     objects = defaultdict(list)
 
-    # Regroupement des cellules appartenant au même objet
+    # Regroupe les cellules appartenant au même objet.
     for y in range(h):
         for x in range(w):
             obj_id = grid[y, x, 1]
@@ -262,7 +265,7 @@ def apply_object_cuts(grid):
 
         cut_y = None
 
-        # Recherche d'une section horizontale entièrement détruite (sans SOLID)
+        # Cherche une section horizontale entièrement détruite, sans cellule SOLID.
         for y, xs in rows.items():
             for x in xs:
                 if grid[y, x, 0] == SOLID:
@@ -274,7 +277,7 @@ def apply_object_cuts(grid):
         if cut_y is None:
             continue
 
-        # 🔥 Conversion en SABLE pour tout ce qui se trouve au-dessus de la coupure
+        # Convertit en SAND tout ce qui se trouve au-dessus de la coupure.
         for x, y in cells:
             if y > cut_y and grid[y, x, 0] == SOLID:
                 grid[y, x, 0] = SAND

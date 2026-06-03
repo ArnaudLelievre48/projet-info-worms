@@ -4,7 +4,7 @@ import re
 import assets
 
 
-# stats par defaut des armes
+# Statistiques par défaut des armes.
 DEFAULT_WEAPON_STATS = {
     "missile": {
         "radius_range": 100,
@@ -21,7 +21,7 @@ DEFAULT_WEAPON_STATS = {
 }
 
 
-# liste des patterns REGEX que l'on essaye d'identifier à chaque ligne
+# Expressions régulières testées sur chaque ligne du fichier de configuration.
 LINE_PATTERNS = {
     "money": re.compile(r"^player\s+([12])\s+money\s+(-?\d+)\s*$", re.I),
     "worm": re.compile(r"^player\s+([12])\s+worm\s+(-?\d+)\s+(-?\d+)(.*)$", re.I),
@@ -36,7 +36,7 @@ OPTION_PATTERN = re.compile(r"(\w+)\s*=\s*(-?\d+(?:\.\d+)?)")
 
 def default_config(ny=108):
     """
-    permet de créer les personnage avec toutes ses propriétés, un peu comme quand on suavegarde une partie et qu'on load une partie
+    Construit la configuration par défaut des joueurs, des prix et des armes.
     """
     return {
         "players": [
@@ -61,7 +61,7 @@ def default_config(ny=108):
 
 def parse_value(raw_value):
     """
-    permet de convertir en int ou en float les valeurs lorsq'on lit la config
+    Convertit une valeur lue dans la configuration en entier ou en flottant.
     """
     value = float(raw_value)
     if value.is_integer():
@@ -78,9 +78,9 @@ def parse_options(raw_options):
 
 def player_config(config, player_number, line_number):
     """
-    converti l'index et retourne la config du jour voulu
+    Convertit le numéro de joueur en index et retourne sa configuration.
     """
-    # permet de lire player 1 pour player d'indice 0, et player 2 pour player d'indice 1
+    # Permet de lire `player 1` pour l'indice 0 et `player 2` pour l'indice 1.
     index = int(player_number) - 1
     if not 0 <= index < len(config["players"]):
         raise ValueError(f"ligne {line_number}: joueur invalide: {player_number}")
@@ -89,7 +89,7 @@ def player_config(config, player_number, line_number):
 
 def apply_weapon_stats(weapon, stats):
     """
-    applique à weapon les parametres rentrés en stat
+    Applique à une arme les paramètres lus dans les statistiques.
     """
     weapon.radius_range = stats["radius_range"]
     weapon.radius_explosion = stats["radius_explosion"]
@@ -100,7 +100,7 @@ def apply_weapon_stats(weapon, stats):
 
 def make_weapon(player, weapon_name, stats):
     """
-    permet d'instancier un missile ou une strike, puis applique les stats avant de le retourner
+    Instancie un missile ou un strike, puis lui applique ses statistiques.
     """
     if weapon_name == "missile":
         weapon = player.missile()
@@ -116,7 +116,7 @@ def load_config(path, ny=108):
     """
     Charge un fichier de configuration custom dans un dictionnaire simple.
 
-    Syntaxe supportee:
+    Syntaxe supportée :
       player 1 money 1500
       player 1 worm 25 48 health=3 range=120 weight=5
       player 1 missiles 3
@@ -127,7 +127,7 @@ def load_config(path, ny=108):
       bonus kill_reward 150
       weapon missile damage=3 radius_range=100 radius_explosion=5 radius_break=8
 
-    Les lignes vides et les commentaires commencant par # sont ignores.
+    Les lignes vides et les commentaires commençant par # sont ignorés.
     """
 
     config = default_config(ny)
@@ -136,12 +136,12 @@ def load_config(path, ny=108):
     with open(path, encoding="utf-8") as config_file:
         for line_number, raw_line in enumerate(config_file, start=1):
 
-            # sépare le contenu des commentiares
+            # Retire les commentaires de fin de ligne.
             line = raw_line.split("#", 1)[0].strip()
             if not line:
                 continue
 
-            # match les patterns avec du REGEX et applique les paramètres au Player correspondant
+            # Identifie la ligne par expression régulière et applique les paramètres au joueur concerné.
 
             if match := LINE_PATTERNS["money"].match(line):
                 player = player_config(config, match.group(1), line_number)
@@ -195,7 +195,7 @@ def load_config(path, ny=108):
 
 def create_players(config):
     """
-    permet de créer les Players et de charger les wormz et weapons dans l'inventaire du joueur
+    Crée les joueurs et remplit leur liste de wormz et leur inventaire d'armes.
     """
     players = []
 

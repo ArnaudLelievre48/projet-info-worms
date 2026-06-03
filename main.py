@@ -16,13 +16,13 @@ import display as dp
 import physics
 import shapes
 
-# fonctions de la base de DB
+# Fonctions d'accès à la base de données.
 
 
-# liste les sauvegardes disponibles
+# Liste les sauvegardes disponibles.
 def list_saves():
     """
-    permet de retourner la liste de parties enregistréest trouvées dans la DB
+    Retourne les identifiants des parties enregistrées dans la base de données.
     """
 
     conn = sqlite3.connect(DB_PATH)
@@ -40,10 +40,10 @@ def list_saves():
     return [r[0] for r in rows]
 
 
-# à ne lancer qu'une fois
+# Initialise le schéma de la base.
 def init_db():
     """
-    initialise la DB : game.db, lorsqu'elle n'existe pas
+    Crée la base `game.db` et sa table de sauvegardes si elles n'existent pas.
     """
 
     conn = sqlite3.connect("game.db")
@@ -61,10 +61,10 @@ def init_db():
     conn.close()
 
 
-# vérifie si la DB exite, si elle existe pas, on lance init_db()
+# Vérifie que la base existe avant de lancer le jeu.
 def ensure_db_exists(db_path="game.db"):
     """
-    vérifie que la DB : game.db existe, si c'est pas le cas ça la crée
+    Crée la base `game.db` si elle est absente.
     """
     if not os.path.exists(db_path):
         print("DB not found → initializing...")
@@ -77,21 +77,21 @@ ensure_db_exists()
 DB_PATH = os.path.join(os.path.dirname(__file__), "game.db")
 
 
-# save
+# Sauvegarde l'état courant de la partie.
 def save_game(grid, players):
     """
-    fonction écrivant dans la DB l'état de la partie : joueurs et GRID afin de pouvoir recharger ces informations et reprendre la partie si besoin
+    Écrit la grille et l'état des joueurs dans la base pour pouvoir reprendre la partie.
     """
 
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
-    # grid → bytes
+    # Sérialisation de la grille en octets.
     buffer = io.BytesIO()
     np.save(buffer, grid)
     grid_blob = buffer.getvalue()
 
-    # players → JSON
+    # Sérialisation des joueurs en JSON.
     state_json = json.dumps(players)
 
     cur.execute(
@@ -104,7 +104,7 @@ def save_game(grid, players):
 
 def load_game(save_id):
     """
-    fonction permettant de charger une partie sauvegardée dans la DB
+    Charge une partie sauvegardée depuis la base de données.
     """
 
     conn = sqlite3.connect("game.db")
@@ -138,12 +138,12 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-# taille de la grille
+# Dimensions de la grille.
 Nx, Ny = 192, 108
 cell_size = 10
 game_config = DSL.load_config(args.config, Ny) if args.config else DSL.default_config(Ny)
 
-# types :
+# Types de matériaux :
 ## 0 - AIR
 ## 1 - SOLID
 ## 2 - SABLE
@@ -160,7 +160,7 @@ dirt_pixel = ground[99, 0]
 grass_pixel = ground[86, 0]
 bridge_pixel = bridge1[35, 33]
 
-# lit les images permettant de générer la map avec ses objets
+# Lit les images utilisées pour générer la carte et ses objets.
 
 for y in range(Ny):
     for x in range(Nx):
@@ -186,7 +186,7 @@ valid_ids = list_saves()
 
 print("Valid save ids:", valid_ids)
 
-# demande un save_id, si il est pas correcte, on commence une nouvelle partie
+# Demande une sauvegarde existante ; sinon, commence une nouvelle partie.
 
 if args.config:
     print(f"Starting a new custom game from {args.config} !")
@@ -207,7 +207,7 @@ weapon_type = 0
 prices = game_config["prices"]
 kill_reward = game_config["bonuses"]["kill_reward"]
 
-##### CODE LEGACY DE TEST, plus compatible avec le projet #####
+##### CODE DE TEST LEGACY, qui n'est plus compatible avec le projet #####
 #
 # if backend == "MATPLOTLIB":
 #    plt.ion()
@@ -220,7 +220,7 @@ kill_reward = game_config["bonuses"]["kill_reward"]
 #            plt.pause(0.001)
 
 if backend == "PYGAME":
-    # init pygame and its screen
+    # Initialise Pygame et sa fenêtre.
     pygame.init()
     id_worm_launch = 0
     font = pygame.font.SysFont(None, 30)
@@ -243,7 +243,7 @@ if backend == "PYGAME":
 
     pygame.display.flip()
 
-    # main game loop
+    # Boucle principale du jeu.
 
     nb_actions = 0
     check_step = False
@@ -251,11 +251,11 @@ if backend == "PYGAME":
     GRID, moved = physics.step_vectorized(GRID, player1, player2)
 
     while running:
-        # gestion des inputs
+        # Gestion des entrées utilisateur.
 
         for event in pygame.event.get():
 
-            # si la fenetre change de taille
+            # Redimensionne la fenêtre si sa taille change ou si la touche R est pressée.
     
             info = pygame.display.Info()
             if (
@@ -270,20 +270,20 @@ if backend == "PYGAME":
                 screen.fill((0, 255, 255))
                 refresh_UI = True
     
-            # quitter le jeu ( action de quitter : cliquer la croix sur la fenetre pygame )
+            # Quitte le jeu via la fermeture de la fenêtre Pygame.
             if event.type == pygame.QUIT:
                 running = False
                 pygame.quit()
                 exit()
     
-            # enregistre et quitte le jeu ( key : q )
+            # Sauvegarde la partie puis quitte le jeu avec la touche Q.
             if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_q):
                 print("Sauvegarde en cours...")
                 save_game(GRID, [player.to_dict() for player in players])
                 running = False
                 print("Sauvegarde terminée.")
     
-            # ajout de worm ( clique gauche )
+            # Ajoute un worm avec le clic gauche.
             if (
                 (event.type == pygame.MOUSEBUTTONDOWN)
                 and (event.button == 1)
@@ -306,7 +306,7 @@ if backend == "PYGAME":
                     else:
                         print("CANNOT PUT WORM HERE")
     
-            # change de worm selectionne pour le missile ( key : tab )
+            # Change le worm sélectionné pour lancer un missile avec Tab.
             if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_TAB):
                 if players[player_id].wormz != []:
                     id_worm_launch = (id_worm_launch + 1) % len(players[player_id].wormz)
@@ -323,14 +323,14 @@ if backend == "PYGAME":
                     )
                     refresh_UI = True
     
-            # change de type d'arme pour le clique droit ( key : left shift )
+            # Change le type d'arme utilisé par le clic droit avec Maj gauche.
             if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_LSHIFT):
                 weapon_type = (weapon_type + 1) % 2
                 print("WEAPON_TYPE : ", weapon_type)
                 screen.fill((0, 255, 255))
                 refresh_UI = True
     
-            # finir un tour (changer de joueur) ( key : entrer )
+            # Termine le tour et passe au joueur suivant avec Entrée.
             if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_RETURN):
                 id_worm_launch = 0
                 player_id = (player_id + 1) % 2
@@ -340,7 +340,7 @@ if backend == "PYGAME":
                 screen.fill((0, 255, 255))
                 refresh_UI = True
     
-            # acheter missile ( key : m )
+            # Achète un missile avec la touche M.
             if (
                 (event.type == pygame.KEYDOWN)
                 and (event.key == pygame.K_m)
@@ -357,7 +357,7 @@ if backend == "PYGAME":
                 screen.fill((0, 255, 255))
                 refresh_UI = True
     
-            # acheter strike , coute 2 actions (key : s)
+            # Achète un strike avec la touche S ; cette action coûte deux points.
             if (
                 (event.type == pygame.KEYDOWN)
                 and (event.key == pygame.K_s)
@@ -374,7 +374,7 @@ if backend == "PYGAME":
                 screen.fill((0, 255, 255))
                 refresh_UI = True
     
-            # lancer un missile / strike (clique droit)
+            # Lance un missile ou un strike avec le clic droit.
             if (
                 (event.type == pygame.MOUSEBUTTONDOWN)
                 and (event.button == 3)
@@ -463,16 +463,16 @@ if backend == "PYGAME":
                 refresh_UI = True
                 check_step = True
     
-            # step
+            # Met à jour la physique si nécessaire.
             if check_step:
                 #GRID, moved = physics.step(GRID, player1, player2)
                 GRID, moved = physics.step_vectorized(GRID, player1, player2)
-                print("checking step funciton")
+                print("checking step function")
 
             if (not moved):
                 check_step = False
     
-            # met à jour l'affichage si la grille / les wormz ont bougés
+            # Rafraîchit l'affichage si la grille ou les wormz ont bougé.
             if moved:
                 refresh_UI = True
             while moved:
@@ -494,7 +494,7 @@ if backend == "PYGAME":
             GRID, moved = physics.step_vectorized(GRID, player1, player2, direction=1)
             check_step = True
     
-            # affiche au dessus les élément d'UI après avoir rafraichi la grid et les wormz
+            # Affiche les éléments d'interface après le rafraîchissement de la grille et des wormz.
             if refresh_UI:
                 dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
                 dp.draw_shop(screen, player1, player2, font, prices)

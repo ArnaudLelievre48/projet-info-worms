@@ -1,6 +1,6 @@
-# adds shapes to the grid
+# Ajoute des formes à la grille.
 
-# Définition des dimensions de la grille de jeu
+# Dimensions de la grille de jeu.
 Nx, Ny = 192, 108
 
 """
@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 
 class Shape(ABC):
     """
-    Classe mère abstraite représentant une forme générique sur la grille.
+    Classe abstraite représentant une forme générique sur la grille.
     """
     def __init__(self, x0, y0, object_id=999, material=1, texture=1):
         """
@@ -33,7 +33,7 @@ class Shape(ABC):
 
 class Rectangle(Shape):
     """
-    Classe fille pour la création de formes rectangulaires.
+    Forme rectangulaire dessinable sur la grille.
     """
     def __init__(self, x0, y0, dx, dy, object_id=999, material=1, texture=1):
         """
@@ -55,7 +55,7 @@ class Rectangle(Shape):
 
 class Triangle(Shape):
     """
-    Classe fille pour la création de triangles isocèles.
+    Triangle isocèle dessinable sur la grille.
     """
     def __init__(self, x0, y0, dx, dy, object_id=999, material=1, texture=1):
         """
@@ -83,7 +83,7 @@ class Triangle(Shape):
 
 class HCircle(Shape):
     """
-    Classe fille pour la création de demi-cercles.
+    Demi-cercle dessinable sur la grille.
     """
     def __init__(self, x0, y0, r, object_id=999, material=1, texture=1):
         """
@@ -94,7 +94,7 @@ class HCircle(Shape):
 
     def draw(self, grid):
         """
-        Génère un demi-cercle
+        Dessine un demi-cercle sur la grille.
         """
         for x in range(2 * self.r):
             for y in range(self.r):
@@ -107,15 +107,18 @@ class HCircle(Shape):
 
 def transform(grid, x_0, y_0, radius, material):
     """
-    transforme de matériaux en un autre (solid -> AIR pour destruction, solid -> sable pour cassage) sur un certain rayon autour de : x_0, y_0
+    Transforme les matériaux dans un rayon donné autour de `(x_0, y_0)`.
+
+    Utilisé pour détruire une zone (SOLID vers AIR) ou fragiliser une structure
+    (SOLID vers SAND).
     """
-    # Fonction d'explosion : remplace les zones touchées par du vide (matériau 0) ou du sable (matériau 2)
+    # Fonction d'explosion : remplace les zones touchées par de l'air ou du sable.
     for x in range(Nx):
         for y in range(Ny):
             if ( (x - x_0)**2 + (y - y_0)**2 ) < ( radius**2) :
                 if grid[y][x][0] != 0:
                     grid[y][x][0] = material
-                    #grid[y][x][2] = material
+                    # grid[y][x][2] = material
                     if material == 0:
                         grid[y][x][1] = 0
     return grid

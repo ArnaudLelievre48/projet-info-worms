@@ -1,4 +1,4 @@
-# display with matplotlib
+# Fonctions d'affichage avec Matplotlib et Pygame.
 
 import os
 
@@ -10,10 +10,10 @@ from matplotlib.colors import ListedColormap
 cmap = ListedColormap(["gray", "red", "orange"])
 
 
-# matplotlib
+# Affichage Matplotlib.
 def show_grid_matplotlib(grid):
     """
-    fonction qui a permis de débuger au début pour afficher dans matplotlib la GRID
+    Affiche la grille avec Matplotlib pour faciliter le débogage.
     """
 
     grid_show = np.array([[cell[0] for cell in row] for row in grid])
@@ -23,10 +23,10 @@ def show_grid_matplotlib(grid):
     plt.colorbar(ticks=[0, 1, 2])
 
 
-# pygame
+# Affichage Pygame.
 def draw_cell(screen: pygame.Surface, x, y, cell_size=10):
     """
-    fonction permettant d'afficher une cellule de taille 10x10 : un bloc de la GRID
+    Dessine une cellule de la grille sur l'écran Pygame.
     """
 
     rect = pygame.Rect(x * cell_size, y * cell_size, cell_size - 1, cell_size - 1)
@@ -35,7 +35,9 @@ def draw_cell(screen: pygame.Surface, x, y, cell_size=10):
 
 def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=10):
     """
-    fonction permettant d'afficher la GRID avec les texture corresppondante au dessus (10px x 10px), ainsi que les wormz,  utilise du cache pour éviter d'avoir à re-render tout le temps
+    Affiche la grille avec les textures correspondantes, ainsi que les wormz.
+
+    Les textures sont mises en cache pour éviter de les recharger à chaque frame.
     """
     Ny = len(grid)
     Nx = len(grid[0])
@@ -49,7 +51,7 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=10):
         for x in range(Nx):
             material, obj, tex = grid[Ny - 1 - y][x]
 
-            # AIR = explicitly do nothing (fine ONLY because screen is cleared)
+            # AIR : rien à dessiner, car l'écran est effacé avant chaque rendu.
             if material == 0:
                 continue
 
@@ -96,7 +98,7 @@ weapon_cache = {}
 
 def display_weapon(screen, traj_x, traj_y, cell_size=10):
     """
-    fonction permettant l'affichage des weapons lors de leurs trajectoire
+    Affiche une arme à une position donnée de sa trajectoire.
     """
 
     global weapon_cache
@@ -117,7 +119,7 @@ def display_weapon(screen, traj_x, traj_y, cell_size=10):
 
 def draw_shop(screen, player1, player2, font, prices=None):
     """
-    permet d'afficher le prix des items pour les 2 joueurs, une feature envisagée aurait été d'appliquer des bonus et malus de prix, mais on a pas eu le temps...
+    Affiche les prix des objets achetables pour les deux joueurs.
     """
     if prices is None:
         prices = {"worm": 200, "missile": 150, "strike": 300}
@@ -143,7 +145,7 @@ def show_UI(
     screen, player1, player2, font, player_id, weapon_type, nb_actions, cell_size=10
 ):
     """
-    fonction permettant d'afficher l'UI : ensemble des informations descrivant qui joue, avec quelle arme, la quantité d'argent, de wormz, d'armes...
+    Affiche l'interface de jeu : joueur actif, arme sélectionnée, argent et inventaire.
     """
     txtmoney1 = font.render(f"player1's money: {player1.money}", True, (255, 255, 255))
     txtmoney2 = font.render(f"player2's money: {player2.money}", True, (255, 255, 255))
