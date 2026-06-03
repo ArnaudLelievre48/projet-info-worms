@@ -186,24 +186,6 @@ valid_ids = list_saves()
 
 print("Valid save ids:", valid_ids)
 
-# Demande une sauvegarde existante ; sinon, commence une nouvelle partie.
-
-if args.config:
-    print(f"Starting a new custom game from {args.config} !")
-    player1, player2 = DSL.create_players(game_config)
-else:
-    save_id = int(input("Enter save id: "))
-    if save_id not in valid_ids:
-        print("Invalid save id.")
-        print("Starting a new game !")
-        player1, player2 = DSL.create_players(game_config)
-    else:
-        GRID, player1, player2 = load_game(save_id)
-
-
-players = [player1, player2]
-player_id = 0
-weapon_type = 0
 prices = game_config["prices"]
 kill_reward = game_config["bonuses"]["kill_reward"]
 
@@ -232,6 +214,23 @@ if backend == "PYGAME":
     if OVERRIDE:
         screen = pygame.display.set_mode((1920, 1080))
     clock = pygame.time.Clock()
+
+    # Menu de démarrage : nouvelle partie ou chargement de la dernière sauvegarde.
+    if args.config:
+        print(f"Starting a new custom game from {args.config} !")
+        player1, player2 = DSL.create_players(game_config)
+    else:
+        menu_action, save_id = dp.run_start_menu(screen, clock, GRID, valid_ids, cell_size)
+        if menu_action == "load" and save_id in valid_ids:
+            print(f"Loading save #{save_id}...")
+            GRID, player1, player2 = load_game(save_id)
+        else:
+            print("Starting a new game !")
+            player1, player2 = DSL.create_players(game_config)
+
+    players = [player1, player2]
+    player_id = 0
+    weapon_type = 0
 
     running = True
 
