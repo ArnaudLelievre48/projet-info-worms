@@ -40,7 +40,7 @@ def make_benchmark_grid(width, height, grid_type, seed=0):
         sand_mask = rng.random((height, width)) < 0.65
         solid_mask = rng.random((height, width)) < 0.10
     else:
-        raise ValueError(f"Unknown grid type: {grid_type}")
+        raise ValueError("Unknown grid type: {}".format(grid_type))
 
     # SOLID is applied first, then SAND overwrites part of it. This keeps the
     # density definitions simple and deterministic for every benchmark run.
@@ -75,11 +75,11 @@ def benchmark_step_efficiency(
     empty_player_2 = assets.Player()
 
     print("\nBenchmarking regular step vs vectorized step")
-    print(f"Grid sizes: {sizes}")
-    print(f"Repeats per case: {repeats}\n")
+    print("Grid sizes: {}".format(sizes))
+    print("Repeats per case: {}\n".format(repeats))
 
     for grid_type in grid_types:
-        print(f"Grid type: {grid_type}")
+        print("Grid type: {}".format(grid_type))
         for size in sizes:
             grid = make_benchmark_grid(size, size, grid_type, seed=size)
 
@@ -108,9 +108,9 @@ def benchmark_step_efficiency(
             timings[grid_type]["vectorized"].append(vectorized_mean)
 
             print(
-                f"  {size:>3}x{size:<3} | "
-                f"regular={regular_mean:.6f}s | "
-                f"vectorized={vectorized_mean:.6f}s"
+                "  {:>3}x{:<3} | regular={:.6f}s | vectorized={:.6f}s".format(
+                    size, size, regular_mean, vectorized_mean
+                )
             )
 
     fig, axes = plt.subplots(1, len(grid_types), figsize=(5 * len(grid_types), 4))
@@ -135,7 +135,7 @@ def benchmark_step_efficiency(
     fig.suptitle("Physics step efficiency comparison")
     fig.tight_layout()
     fig.savefig(output_path, dpi=150)
-    print(f"\nSaved benchmark plot to {output_path}")
+    print("\nSaved benchmark plot to {}".format(output_path))
 
     if show:
         plt.show()
@@ -149,10 +149,10 @@ class VerboseTestCase(unittest.TestCase):
     def setUp(self):
         super().setUp()
         description = self.shortDescription() or self._testMethodName
-        print(f"\n[TEST] {description}")
+        print("\n[TEST] {}".format(description))
 
     def log_success(self, message):
-        print(f"  [OK] {message}")
+        print("  [OK] {}".format(message))
 
 
 class TestWormMethods(VerboseTestCase):
@@ -166,8 +166,9 @@ class TestWormMethods(VerboseTestCase):
         for initial_health, damage, expected_health in cases:
             with self.subTest(initial_health=initial_health, damage=damage):
                 print(
-                    f"  Checking damage: health={initial_health}, "
-                    f"damage={damage}, expected={expected_health}"
+                    "  Checking damage: health={}, damage={}, expected={}".format(
+                        initial_health, damage, expected_health
+                    )
                 )
                 worm = assets.Player.Worm(5, 5, health=initial_health)
                 worm.take_damage(damage)
@@ -183,7 +184,7 @@ class TestWormMethods(VerboseTestCase):
 
         for name, air_cell, expected in cases:
             with self.subTest(name=name):
-                print(f"  Checking fall detection: {name}")
+                print("  Checking fall detection: {}".format(name))
                 grid = make_grid()
                 worm = assets.Player.Worm(5, 5)
 
@@ -198,7 +199,7 @@ class TestWormMethods(VerboseTestCase):
                     grid[y, x] = (AIR, 0, 0)
 
                 self.assertIs(bool(worm.is_supposed_to_fall(grid)), expected)
-                self.log_success(f"fall detection returned {expected}")
+                self.log_success("fall detection returned {}".format(expected))
 
     def test_gravity(self):
         """Gravity moves the worm vertically first, then diagonally if needed."""
@@ -209,7 +210,7 @@ class TestWormMethods(VerboseTestCase):
 
         for name, diagonal_air_cell, expected_position in cases:
             with self.subTest(name=name):
-                print(f"  Checking gravity movement: {name}")
+                print("  Checking gravity movement: {}".format(name))
                 grid = make_grid()
                 worm = assets.Player.Worm(5, 5)
 
@@ -227,7 +228,7 @@ class TestWormMethods(VerboseTestCase):
 
                 worm.gravity(grid)
                 self.assertEqual((worm.x_pos, worm.y_pos), expected_position)
-                self.log_success(f"worm moved to {expected_position}")
+                self.log_success("worm moved to {}".format(expected_position))
 
 
 class TestWeaponMethods(VerboseTestCase):
@@ -242,7 +243,7 @@ class TestWeaponMethods(VerboseTestCase):
 
         for args, expected_end in cases:
             with self.subTest(args=args):
-                print(f"  Checking missile trajectory with args={args}")
+                print("  Checking missile trajectory with args={}".format(args))
                 x_target, y_target, x_pos, y_pos = args
                 x_values, y_values = missile.launch_trajectory(
                     x_target, y_target, x_pos, y_pos
@@ -269,7 +270,7 @@ class TestWeaponMethods(VerboseTestCase):
 
         for args, expected_x in cases:
             with self.subTest(args=args):
-                print(f"  Checking strike trajectory with args={args}")
+                print("  Checking strike trajectory with args={}".format(args))
                 x_target, y_target, x_pos, y_pos = args
                 x_values, y_values = strike.launch_trajectory(
                     x_target, y_target, x_pos, y_pos
@@ -293,7 +294,7 @@ class TestGridMethods(VerboseTestCase):
 
         for args, expected_count in cases:
             with self.subTest(args=args):
-                print(f"  Checking rectangle draw with args={args}")
+                print("  Checking rectangle draw with args={}".format(args))
                 x0, y0, dx, dy = args
                 grid = make_grid()
                 rectangle = shapes.Rectangle(
@@ -307,7 +308,7 @@ class TestGridMethods(VerboseTestCase):
                 self.assertEqual(np.count_nonzero(grid[:, :, 0] == SOLID), expected_count)
                 self.assertTrue(np.all(grid[y0 : y0 + dy, x0 : x0 + dx, 1] == 7))
                 self.assertTrue(np.all(grid[y0 : y0 + dy, x0 : x0 + dx, 2] == 4))
-                self.log_success(f"rectangle wrote {expected_count} solid cells")
+                self.log_success("rectangle wrote {} solid cells".format(expected_count))
 
     def test_transform(self):
         """transform changes nearby material and clears object ids only for AIR."""
@@ -318,7 +319,7 @@ class TestGridMethods(VerboseTestCase):
 
         for material, name in cases:
             with self.subTest(name=name):
-                print(f"  Checking transform behavior: {name}")
+                print("  Checking transform behavior: {}".format(name))
                 grid = np.array(
                     [[(SOLID, 5, 1) for _ in range(shapes.Nx)] for _ in range(shapes.Ny)]
                 )
@@ -343,7 +344,7 @@ class TestPhysicsMethods(VerboseTestCase):
 
         for name, start_position, direction, expected_position in cases:
             with self.subTest(name=name):
-                print(f"  Checking vectorized sand movement: {name}")
+                print("  Checking vectorized sand movement: {}".format(name))
                 grid = make_grid()
                 start_x, start_y = start_position
                 grid[start_y, start_x] = (SAND, 8, 2)
@@ -365,7 +366,7 @@ class TestPhysicsMethods(VerboseTestCase):
                 self.assertTrue(moved)
                 self.assertEqual(new_grid[expected_y, expected_x, 0], SAND)
                 self.assertEqual(new_grid[expected_y, expected_x, 1], 8)
-                self.log_success(f"sand moved to {expected_position}")
+                self.log_success("sand moved to {}".format(expected_position))
 
 
 if __name__ == "__main__":

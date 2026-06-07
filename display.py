@@ -56,7 +56,7 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=10):
                 continue
 
             if tex not in cache:
-                path = f"textures/{tex}.png"
+                path = "textures/{}.png".format(tex)
                 if not os.path.exists(path):
                     continue
 
@@ -68,7 +68,7 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=10):
 
     for worm in wormz1:
         tex = -1
-        path = f"textures/worm1.png"
+        path = "textures/worm1.png"
         if not os.path.exists(path):
             continue
 
@@ -81,7 +81,7 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=10):
 
     for worm in wormz2:
         tex = -1
-        path = f"textures/worm2.png"
+        path = "textures/worm2.png"
         if not os.path.exists(path):
             continue
 
@@ -91,6 +91,31 @@ def show_grid_pygame(screen, grid, wormz1, wormz2, cell_size=10):
         screen.blit(
             cache[tex], (worm.x_pos * cell_size - cell_size/2, (Ny - worm.y_pos - 1) * cell_size - cell_size)
         )
+
+
+def draw_missile_range(screen, grid, worm, cell_size=10):
+    """
+    Affiche la portée de tir du missile autour du worm sélectionné.
+    """
+    Ny = len(grid)
+    radius = int(worm.worm_range * cell_size)
+    diameter = radius * 2
+    center_x = int(worm.x_pos * cell_size + cell_size / 2)
+    center_y = int((Ny - worm.y_pos - 1) * cell_size + cell_size / 2)
+    worm_center_y = int((Ny - worm.y_pos - 1) * cell_size)
+
+    range_surface = pygame.Surface((diameter, diameter), pygame.SRCALPHA)
+    pygame.draw.circle(range_surface, (40, 220, 80, 20), (radius, radius), radius)
+    pygame.draw.circle(range_surface, (40, 220, 80, 130), (radius, radius), radius, 3)
+
+    screen.blit(range_surface, (center_x - radius, center_y - radius))
+    pygame.draw.circle(
+        screen,
+        (255, 255, 255),
+        (center_x, worm_center_y),
+        int(cell_size * 1.75),
+        3,
+    )
 
 
 weapon_cache = {}
@@ -130,10 +155,10 @@ def draw_shop(screen, player1, player2, font, prices=None):
     pygame.draw.rect(screen, (100, 80, 80), pygame.Rect(width - 450, 10, 200, 40))
 
     txt1 = font.render(
-        f"Weapon : {prices['missile']} | {prices['strike']}", True, (255, 255, 255)
+        "Weapon : {} | {}".format(prices["missile"], prices["strike"]), True, (255, 255, 255)
     )
 
-    txt2 = font.render(f"Worm : {prices['worm']}", True, (255, 255, 255))
+    txt2 = font.render("Worm : {}".format(prices["worm"]), True, (255, 255, 255))
 
     screen.blit(txt1, (100, 20))
     screen.blit(txt2, (300, 20))
@@ -147,30 +172,30 @@ def show_UI(
     """
     Affiche l'interface de jeu : joueur actif, arme sélectionnée, argent et inventaire.
     """
-    txtmoney1 = font.render(f"player1's money: {player1.money}", True, (255, 255, 255))
-    txtmoney2 = font.render(f"player2's money: {player2.money}", True, (255, 255, 255))
+    txtmoney1 = font.render("player1's money: {}".format(player1.money), True, (255, 255, 255))
+    txtmoney2 = font.render("player2's money: {}".format(player2.money), True, (255, 255, 255))
 
     txtmissile1 = font.render(
-        f"player1's missiles: {len(player1.weapons[0])}", True, (255, 255, 255)
+        "player1's missiles: {}".format(len(player1.weapons[0])), True, (255, 255, 255)
     )
     txtstrike1 = font.render(
-        f"player1's missiles: {len(player1.weapons[1])}", True, (255, 255, 255)
+        "player1's missiles: {}".format(len(player1.weapons[1])), True, (255, 255, 255)
     )
 
     txtmissile2 = font.render(
-        f"player2's missiles: {len(player2.weapons[0])}", True, (255, 255, 255)
+        "player2's missiles: {}".format(len(player2.weapons[0])), True, (255, 255, 255)
     )
     txtstrike2 = font.render(
-        f"player2's missiles: {len(player2.weapons[1])}", True, (255, 255, 255)
+        "player2's missiles: {}".format(len(player2.weapons[1])), True, (255, 255, 255)
     )
 
-    txt_player = font.render(f"player {player_id+1}", True, (255, 255, 255))
+    txt_player = font.render("player {}".format(player_id + 1), True, (255, 255, 255))
     if weapon_type == 0:
         weapon_name = "Missile"
     if weapon_type ==1 :
         weapon_name = "Strike"
-    txt_weapon_type = font.render(f"weapon type: {weapon_name}", True, (255, 255, 255))
-    txt_nb_actions = font.render(f"nb actions: {nb_actions} / 3", True, (255, 255, 255))
+    txt_weapon_type = font.render("weapon type: {}".format(weapon_name), True, (255, 255, 255))
+    txt_nb_actions = font.render("nb actions: {} / 3".format(nb_actions), True, (255, 255, 255))
 
     screen.blit(txtmoney1, (10 * cell_size, 15 * cell_size))
     screen.blit(txtmissile1, (10 * cell_size, 20 * cell_size))
@@ -233,7 +258,7 @@ def draw_start_menu_background(screen, grid, cell_size, tick):
             if material == 0:
                 continue
             if tex not in cache or cache[tex].get_width() != preview_cell:
-                path = f"textures/{tex}.png"
+                path = "textures/{}.png".format(tex)
                 if not os.path.exists(path):
                     continue
                 img = pygame.image.load(path).convert_alpha()
@@ -282,6 +307,59 @@ def draw_menu_button(screen, font, rect, text, mouse_pos, enabled=True):
     screen.blit(label, label_rect)
 
 
+def draw_controls_help(screen, title_font, text_font):
+    """
+    Affiche les commandes principales du jeu sur la gauche du menu.
+    """
+    controls = [
+        ("Clic gauche", "Acheter et placer un worm"),
+        ("Clic droit", "Lancer l'arme selectionnee"),
+        ("Tab", "Changer de worm pour le tir"),
+        ("Maj gauche", "Changer de type d'arme"),
+        ("Entree", "Terminer le tour"),
+        ("M", "Acheter un missile"),
+        ("S", "Acheter un strike"),
+        ("R", "Rafraichir la fenetre"),
+        ("Q", "Sauvegarder et quitter"),
+    ]
+
+    width = screen.get_width()
+    height = screen.get_height()
+    panel_width = min(430, max(300, width // 4))
+    panel_x = 42
+    panel_y = max(96, int(height * 0.18))
+    row_height = 38
+    padding = 22
+    panel_height = padding * 2 + 36 + len(controls) * row_height
+
+    panel = pygame.Rect(panel_x, panel_y, panel_width, panel_height)
+    shadow = panel.move(0, 6)
+    pygame.draw.rect(screen, (0, 0, 0), shadow, border_radius=8)
+    pygame.draw.rect(screen, (245, 250, 244), panel, border_radius=8)
+    pygame.draw.rect(screen, (83, 99, 78), panel, width=3, border_radius=8)
+
+    title = title_font.render("COMMANDES", True, (36, 48, 52))
+    screen.blit(title, (panel.x + padding, panel.y + padding - 2))
+
+    key_color = (55, 71, 79)
+    action_color = (36, 48, 52)
+    key_bg = (219, 204, 150)
+    y = panel.y + padding + 44
+    key_width = 116
+
+    for key, action in controls:
+        key_rect = pygame.Rect(panel.x + padding, y - 5, key_width, 28)
+        pygame.draw.rect(screen, key_bg, key_rect, border_radius=6)
+        pygame.draw.rect(screen, (83, 99, 78), key_rect, width=2, border_radius=6)
+
+        key_label = text_font.render(key, True, key_color)
+        screen.blit(key_label, key_label.get_rect(center=key_rect.center))
+
+        action_label = text_font.render(action, True, action_color)
+        screen.blit(action_label, (key_rect.right + 14, y))
+        y += row_height
+
+
 def run_start_menu(screen, clock, grid, save_ids, cell_size=10):
     """
     Affiche le menu de démarrage et retourne ("play", None) ou ("load", save_id).
@@ -289,6 +367,8 @@ def run_start_menu(screen, clock, grid, save_ids, cell_size=10):
     title_font = pygame.font.SysFont(None, 92)
     button_font = pygame.font.SysFont(None, 48)
     info_font = pygame.font.SysFont(None, 28)
+    controls_title_font = pygame.font.SysFont(None, 34)
+    controls_font = pygame.font.SysFont(None, 25)
     available_save_ids = sorted(save_ids)
     selected_save_index = len(available_save_ids) - 1
     tick = 0
@@ -334,6 +414,7 @@ def run_start_menu(screen, clock, grid, save_ids, cell_size=10):
         )
 
         draw_start_menu_background(screen, grid, cell_size, tick)
+        draw_controls_help(screen, controls_title_font, controls_font)
 
         title = title_font.render("WORMS", True, (36, 48, 52))
         title_shadow = title_font.render("WORMS", True, (255, 239, 178))
@@ -356,10 +437,16 @@ def run_start_menu(screen, clock, grid, save_ids, cell_size=10):
             info_text = "Aucune sauvegarde disponible"
         else:
             info_text = (
-                f"Sauvegarde #{selected_save_id} "
-                f"({selected_save_index + 1}/{len(available_save_ids)})"
+                "Sauvegarde #{} "
+                "({}/{})".format(
+                    selected_save_id,
+                    selected_save_index + 1,
+                    len(available_save_ids),
+                )
             )
-        info = info_font.render(info_text, True, (36, 48, 52))
+        info_shadow = info_font.render(info_text, True, (0, 0, 0))
+        info = info_font.render(info_text, True, (200, 200, 200))
+        screen.blit(info_shadow, info.get_rect(center=(width // 2+3, load_rect.bottom + 28+3)))
         screen.blit(info, info.get_rect(center=(width // 2, load_rect.bottom + 28)))
 
         pygame.display.flip()

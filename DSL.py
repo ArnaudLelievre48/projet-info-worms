@@ -83,7 +83,7 @@ def player_config(config, player_number, line_number):
     # Permet de lire `player 1` pour l'indice 0 et `player 2` pour l'indice 1.
     index = int(player_number) - 1
     if not 0 <= index < len(config["players"]):
-        raise ValueError(f"ligne {line_number}: joueur invalide: {player_number}")
+        raise ValueError("ligne {}: joueur invalide: {}".format(line_number, player_number))
     return config["players"][index]
 
 
@@ -107,7 +107,7 @@ def make_weapon(player, weapon_name, stats):
     elif weapon_name == "strike":
         weapon = player.strike()
     else:
-        raise ValueError(f"arme inconnue: {weapon_name}")
+        raise ValueError("arme inconnue: {}".format(weapon_name))
 
     return apply_weapon_stats(weapon, stats)
 
@@ -143,11 +143,14 @@ def load_config(path, ny=108):
 
             # Identifie la ligne par expression régulière et applique les paramètres au joueur concerné.
 
-            if match := LINE_PATTERNS["money"].match(line):
+            match = LINE_PATTERNS["money"].match(line)
+            if match:
                 player = player_config(config, match.group(1), line_number)
                 player["money"] = int(match.group(2))
+                continue
 
-            elif match := LINE_PATTERNS["worm"].match(line):
+            match = LINE_PATTERNS["worm"].match(line)
+            if match:
                 player_index = int(match.group(1)) - 1
                 player = player_config(config, match.group(1), line_number)
 
@@ -165,30 +168,38 @@ def load_config(path, ny=108):
                         "weight": options.get("weight", 5),
                     }
                 )
+                continue
 
-            elif match := LINE_PATTERNS["weapon_count"].match(line):
+            match = LINE_PATTERNS["weapon_count"].match(line)
+            if match:
                 player = player_config(config, match.group(1), line_number)
                 player[match.group(2).lower()] = int(match.group(3))
+                continue
 
-            elif match := LINE_PATTERNS["price"].match(line):
+            match = LINE_PATTERNS["price"].match(line)
+            if match:
                 config["prices"][match.group(1).lower()] = int(match.group(2))
+                continue
 
-            elif match := LINE_PATTERNS["bonus"].match(line):
+            match = LINE_PATTERNS["bonus"].match(line)
+            if match:
                 config["bonuses"][match.group(1).lower()] = int(match.group(2))
+                continue
 
-            elif match := LINE_PATTERNS["weapon_stats"].match(line):
+            match = LINE_PATTERNS["weapon_stats"].match(line)
+            if match:
                 weapon_name = match.group(1).lower()
                 options = parse_options(match.group(2))
                 unknown_options = set(options) - set(config["weapon_stats"][weapon_name])
                 if unknown_options:
                     unknown = ", ".join(sorted(unknown_options))
                     raise ValueError(
-                        f"ligne {line_number}: option d'arme inconnue: {unknown}"
+                        "ligne {}: option d'arme inconnue: {}".format(line_number, unknown)
                     )
                 config["weapon_stats"][weapon_name].update(options)
+                continue
 
-            else:
-                raise ValueError(f"ligne {line_number}: syntaxe invalide: {raw_line.rstrip()}")
+            raise ValueError("ligne {}: syntaxe invalide: {}".format(line_number, raw_line.rstrip()))
 
     return config
 

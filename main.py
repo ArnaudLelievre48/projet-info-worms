@@ -35,7 +35,7 @@ def list_saves():
 
     print("Available saves:")
     for (save_id,) in rows:
-        print(f"- {save_id}")
+        print("- {}".format(save_id))
 
     return [r[0] for r in rows]
 
@@ -217,12 +217,12 @@ if backend == "PYGAME":
 
     # Menu de démarrage : nouvelle partie ou chargement de la dernière sauvegarde.
     if args.config:
-        print(f"Starting a new custom game from {args.config} !")
+        print("Starting a new custom game from {} !".format(args.config))
         player1, player2 = DSL.create_players(game_config)
     else:
         menu_action, save_id = dp.run_start_menu(screen, clock, GRID, valid_ids, cell_size)
         if menu_action == "load" and save_id in valid_ids:
-            print(f"Loading save #{save_id}...")
+            print("Loading save #{}...".format(save_id))
             GRID, player1, player2 = load_game(save_id)
         else:
             print("Starting a new game !")
@@ -310,16 +310,6 @@ if backend == "PYGAME":
                 if players[player_id].wormz != []:
                     id_worm_launch = (id_worm_launch + 1) % len(players[player_id].wormz)
                     screen.fill((0, 255, 255))
-                    pygame.draw.circle(
-                        screen,
-                        (255, 0, 0),
-                        (
-                            players[player_id].wormz[id_worm_launch].x_pos * cell_size,
-                            (Ny - players[player_id].wormz[id_worm_launch].y_pos - 1)
-                            * cell_size,
-                        ),
-                        cell_size,
-                    )
                     refresh_UI = True
     
             # Change le type d'arme utilisé par le clic droit avec Maj gauche.
@@ -383,10 +373,13 @@ if backend == "PYGAME":
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 grid_x = int(mouse_x // cell_size)
                 grid_y = int(Ny - 1 - (mouse_y // cell_size))
-                x_0_launch = players[player_id].wormz[id_worm_launch].x_pos
-                y_0_launch = players[player_id].wormz[id_worm_launch].y_pos
+                if players[player_id].wormz != []:
+                    id_worm_launch %= len(players[player_id].wormz)
+                    selected_worm = players[player_id].wormz[id_worm_launch]
+                    x_0_launch = selected_worm.x_pos
+                    y_0_launch = selected_worm.y_pos
                 if (players[player_id].weapons[weapon_type] != []) and (
-                    players[player_id].wormz != [] and ( (weapon_type == 1) or ( ( (x_0_launch - grid_x)**2 + (y_0_launch - grid_y)**2) <= (players[player_id].wormz[-1].worm_range**2) ) ) 
+                    players[player_id].wormz != [] and ( (weapon_type == 1) or ( ( (x_0_launch - grid_x)**2 + (y_0_launch - grid_y)**2) <= (selected_worm.worm_range**2) ) ) 
                 ):
                     nb_actions += 1
                     weapon = players[player_id].weapons[weapon_type].pop()
@@ -495,7 +488,16 @@ if backend == "PYGAME":
     
             # Affiche les éléments d'interface après le rafraîchissement de la grille et des wormz.
             if refresh_UI:
+                screen.fill((0, 255, 255))
                 dp.show_grid_pygame(screen, GRID, player1.wormz, player2.wormz)
+                if (
+                    (weapon_type == 0)
+                    and (players[player_id].weapons[0] != [])
+                    and (players[player_id].wormz != [])
+                ):
+                    id_worm_launch %= len(players[player_id].wormz)
+                    selected_worm = players[player_id].wormz[id_worm_launch]
+                    dp.draw_missile_range(screen, GRID, selected_worm)
                 dp.draw_shop(screen, player1, player2, font, prices)
                 dp.show_UI(
                     screen, player1, player2, font, player_id, weapon_type, nb_actions
