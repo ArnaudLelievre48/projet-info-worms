@@ -216,6 +216,7 @@ if backend == "PYGAME":
     clock = pygame.time.Clock()
 
     # Menu de démarrage : nouvelle partie ou chargement de la dernière sauvegarde.
+    print("Appuyez sur 'n' pour changer de sauvegarde séléctionnée")
     if args.config:
         print("Starting a new custom game from {} !".format(args.config))
         player1, player2 = DSL.create_players(game_config)
