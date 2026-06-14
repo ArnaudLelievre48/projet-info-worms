@@ -310,6 +310,56 @@ class TestGridMethods(VerboseTestCase):
                 self.assertTrue(np.all(grid[y0 : y0 + dy, x0 : x0 + dx, 2] == 4))
                 self.log_success("rectangle wrote {} solid cells".format(expected_count))
 
+    def test_triangle_draw(self):
+        """Triangle.draw fills the isosceles area and writes object id and texture."""
+        cases = [
+            ((0, 0, 4, 4), 11),
+            ((1, 1, 2, 2), 3),
+        ]
+
+        for args, expected_count in cases:
+            with self.subTest(args=args):
+                print("  Checking triangle draw with args={}".format(args))
+                x0, y0, dx, dy = args
+                grid = make_grid()
+                triangle = shapes.Triangle(
+                    x0, y0, dx, dy, object_id=7, material=SOLID, texture=4
+                )
+
+                triangle.draw(grid)
+
+                # Metadata must be written exactly where the material was set.
+                drawn = grid[:, :, 0] == SOLID
+                self.assertEqual(np.count_nonzero(drawn), expected_count)
+                self.assertTrue(np.all(grid[:, :, 1][drawn] == 7))
+                self.assertTrue(np.all(grid[:, :, 2][drawn] == 4))
+                self.log_success("triangle wrote {} solid cells".format(expected_count))
+
+    def test_hcircle_draw(self):
+        """HCircle.draw fills the half-disc and writes object id and texture."""
+        cases = [
+            ((3, 0, 3), 16),
+            ((2, 0, 2), 7),
+        ]
+
+        for args, expected_count in cases:
+            with self.subTest(args=args):
+                print("  Checking hcircle draw with args={}".format(args))
+                x0, y0, r = args
+                grid = make_grid()
+                hcircle = shapes.HCircle(
+                    x0, y0, r, object_id=7, material=SOLID, texture=4
+                )
+
+                hcircle.draw(grid)
+
+                # Metadata must be written exactly where the material was set.
+                drawn = grid[:, :, 0] == SOLID
+                self.assertEqual(np.count_nonzero(drawn), expected_count)
+                self.assertTrue(np.all(grid[:, :, 1][drawn] == 7))
+                self.assertTrue(np.all(grid[:, :, 2][drawn] == 4))
+                self.log_success("hcircle wrote {} solid cells".format(expected_count))
+
     def test_transform(self):
         """transform changes nearby material and clears object ids only for AIR."""
         cases = [
